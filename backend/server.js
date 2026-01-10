@@ -7,6 +7,7 @@ import authMiddleware from "./middleware/authMiddleware.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import bcrypt from "bcryptjs";
 
 const app = express();
 app.use(cors());
@@ -49,25 +50,38 @@ const upload = multer({
 });
 
 app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       return res
         .status(400)
-        .json({ message: "Username and password are required" });
+        .json({ message: "O email e password são obrigatórios" });
     }
 
     const result =
-      await sql.query`SELECT * FROM utilizadores WHERE username = ${username} AND password = ${password}`;
+      await sql.query`SELECT * FROM utilizadores WHERE email = ${email}`;
     console.log(result);
-    if (result.recordset.length > 0) {
-      const token = jwt.sign({ id: result.recordset[0].id }, "ksdadasd", {
-        expiresIn: "1h",
-      });
-      res.json(token);
-    } else {
-      res.status(401).json({ message: "Invalid credentials" });
+
+    if (result.recordset.length == 0) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
     }
+
+    const storedPassword = result.recordset[0].password;
+    const isPasswordCorrect = bcrypt.compareSync(password, storedPassword);
+
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ message: "Credenciais inválidos" });
+    }
+
+    const token = jwt.sign(
+      { id: result.recordset[0].id, role: result.recordset[0].role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    res.json(token);
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Internal Server error" });
@@ -75,60 +89,73 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
-  const { username, password } = req.body;
+  const {
+    nome,
+    datanascimento,
+    morada,
+    email,
+    telefone,
+    genero,
+    fotografia,
+    documento,
+    password,
+  } = req.body;
 
   try {
-    if (!username.trim() || !password.trim()) {
+    if (
+      !nome.trim() ||
+      !datanascimento.trim() ||
+      !morada.trim() ||
+      !email.trim() ||
+      !telefone.trim() ||
+      !genero.trim() ||
+      !fotografia.trim() ||
+      !documento.trim() ||
+      !password.trim()
+    ) {
       return res
         .status(400)
-        .json({ message: "Username and password are required" });
+        .json({ message: "Todos os inputs são obrigatórios" });
     }
 
     if (password.length < 6) {
       return res
         .status(400)
-        .json({ message: "Password must have at least 6 characters" });
+        .json({ message: "A password deve ter pelo menos 6 caracteres" });
     }
 
     const { rowsAffected } =
-      await sql.query`SELECT * FROM utilizadores WHERE username = ${username}`;
+      await sql.query`SELECT * FROM utilizadores WHERE email = ${email}`;
 
     if (rowsAffected[0] > 0) {
-      return res.status(400).json({ message: "Username is being used" });
+      return res.status(400).json({ message: "O email está a ser usado" });
     }
+
+    const hashedPassword = bcrypt.hashSync(password);
 
     const result =
-      await sql.query`INSERT INTO utilizadores(username,password) VALUES (${username},${password})`;
+      await sql.query`INSERT INTO utilizadores(nome,datanascimento,morada,email,telefone,genero,fotografia,documento,password) VALUES (${nome},${datanascimento},${morada},${email},${telefone},${genero},${fotografia},${documento},${hashedPassword})`;
 
-    if (result.rowsAffected[0] > 0) {
-      res.status(201).json({ message: "User created succesfully" });
-    } else {
-      res.status(400).json({ message: "Error signing up" });
+    if (result.rowsAffected[0] == 0) {
+      return res.status(400).json({ message: "Erro ao registar usuário" });
     }
+
+    res.status(201).json({ message: "Usuário criado com sucesso" });
   } catch (err) {
     console.error("Error signing up:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-app.post(
-  "/upload",
-  authMiddleware,
-  upload.single("myfile"),
-  async (req, res) => {
-    try {
-      if (!req.file)
-        return res.status(400).json({ message: "No file uploaded" });
-      res.status(201).json({ filename: req.file.filename });
-    } catch (err) {
-      console.error("Upload error:", err);
-      res.status(500).json({ message: "Internal server error" });
-    }
+app.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    res.status(201).json({ filename: req.file.filename });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-);
-
-
-
+});
 
 connecttoDB()
   .then(() => {
