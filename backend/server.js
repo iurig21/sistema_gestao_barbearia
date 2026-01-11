@@ -4,10 +4,12 @@ import sql from "mssql";
 import connecttoDB from "./db.js";
 import jwt from "jsonwebtoken";
 import authMiddleware from "./middleware/authMiddleware.js";
+import roleMiddleware from "./middleware/roleMiddleware.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import bcrypt from "bcryptjs";
+import { isDateValid, isValidTime } from "./utils/index.js";
 
 const app = express();
 app.use(cors());
@@ -15,16 +17,13 @@ app.use(express.json());
 
 const PORT = process.env.PORT ?? 3000;
 
-// ensure uploads directory exists inside backend
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// serve uploaded files
 app.use("/uploads", express.static(uploadsDir));
 
-// multer setup
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsDir);
@@ -156,6 +155,182 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.post("/check-auth", authMiddleware, (req, res) =>
+  res.status(200).json(req.user)
+);
+
+app.post("/services", roleMiddleware, async (req, res) => {
+  try {
+    const { nome, descricao, preco, imagem } = req.body;
+
+    if (!nome.trim() || !imagem.trim() || !preco.trim()) {
+      return res
+        .status(400)
+        .json({ message: "O nome,preco e imagem são obrigatórios" });
+    }
+
+    const { rowsAffected, recordset } =
+      await sql.query`INSERT INTO servicos(nome,descricao,preco,imagem) VALUES (${nome},${descricao},${preco},${imagem})`;
+
+    if (rowsAffected[0] == 0) {
+      return res.status(400).json({ message: "Erro a criar serviço" });
+    }
+
+    res.status(201).json(recordset[0]);
+  } catch (err) {
+    console.error("Eror creating a new service:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/services", async (_, res) => {
+  try {
+    const { recordset: services } = await sql.query`SELECT * FROM servicos`;
+
+    res.status(200).json(services);
+  } catch (err) {
+    console.error("Error fetching services:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.delete("/services/:id", roleMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id.trim()) {
+      return res.status(400).json({ message: "Service ID not provided" });
+    }
+
+    const { rowsAffected } =
+      await sql.query`DELETE FROM servicos WHERE id = ${id}`;
+
+    if (rowsAffected[0] == 0) {
+      return res.status(400).json({ message: "Error deleting service" });
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error("Error deleting service:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.put("/services/:id", roleMiddleware, async (req, res) => {
+  try {
+    const { newName, newDescription, newPrice, newImage } = req.body;
+
+    const { rowsAffected } =
+      await sql.query`UPDATE servicos SET nome = ${newName}, descricao = ${newDescription}, preco = ${newPrice},imagem = ${newImage}`;
+
+    if (rowsAffected[0] == 0) {
+      return res.status(400).json({ message: "Erro ao atualizar serviço" });
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error("Error updating service:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/appointments", authMiddleware, async (req, res) => {
+  try {
+    const { id: userID } = req.user;
+
+    const { recordset: appointments } =
+      await sql.query`SELECT id,user_id,servico_id,CONVERT(VARCHAR(10), data, 103) AS data_formatada,CONVERT(VARCHAR(5), hora, 108) AS hora_formatada FROM marcacoes WHERE user_id = ${userID} ORDER BY data ASC, hora ASC`;
+
+    res.status(200).json(appointments);
+  } catch (err) {
+    console.error("Error fetching appointments", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/appointments", authMiddleware, async (req, res) => {
+  try {
+    const { id: userID } = req.user;
+    const { servicoID, data, hora } = req.body;
+
+    if (!data.trim() || !hora.trim()) {
+      return res
+        .status(400)
+        .json({ message: "A data e hora são obrigatórios" });
+    }
+
+    if (!isDateValid(data)) {
+      return res.status(400).json({ message: "A data está inválida" });
+    }
+
+    const inputDate = new Date(data);
+
+    const currentDate = new Date();
+
+    if (inputDate < currentDate) {
+      return res
+        .status(400)
+        .json({
+          message: "A data de marcação não pode ser anterior à data atual.",
+        });
+    }
+
+
+    if (!isValidTime(hora)) {
+      return res.status(400).json({ message: "Hora inválida" });
+    }
+
+    const hours = hora.split(":").map(Number)[0];
+
+    if (hours < 9 || hours >= 18) {
+      return res
+        .status(400)
+        .json({ message: "O horário deve estar entre 09:00 e 18:00" });
+    }
+
+    const {rowsAffected} = await sql.query`SELECT * FROM marcacoes WHERE data = ${data} AND hora = ${hora}`
+
+    if(rowsAffected[0] > 0 ){
+      return res.status(400).json({message: "Sem disponibilidade"})
+    }
+
+    const {recordset: appointment} = await sql.query`INSERT INTO marcacoes(user_id,servico_id,data,hora) VALUES (${userID},${servicoID},${data},${hora})`
+
+    if(recordset.length == 0){
+      return res.status(400).json({message: "Erro ao criar marcação"})
+    }
+
+    res.status(201).json(appointment[0])
+
+  } catch (err) {
+    console.error("Error creating an appointment:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.delete("/appointments/:id",authMiddleware, async (req,res) => {
+  try{
+
+    const {id} = req.params
+
+    if(!id.trim()){
+      return res.status(400).json({message: "AppointmentID not provided"})
+    }
+
+    const {rowsAffected} = await sql.query`DELETE FROM marcacoes WHERE id = ${id}`
+
+    if(rowsAffected[0] == 0){
+      return res.status(400).json({message: "Erro ao deletar marcação"})
+    }
+
+    res.sendStatus(204)
+
+  }catch(err){
+    console.err("Eror deleting appointment:",err)
+    res.status(500).json({message: "Internal server error"})
+  }
+})
 
 connecttoDB()
   .then(() => {

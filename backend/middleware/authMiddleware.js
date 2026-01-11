@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import sql from "mssql";
 
 function authMiddleware(req, res, next) {
   const authHeader =
@@ -9,15 +10,19 @@ function authMiddleware(req, res, next) {
       : authHeader;
 
   if (!token) {
-    return res.status(401).send({ message: "No token provided" });
+    return res.status(401).json({ message: "No token provided" });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
     if (err) {
-      return res.status(401).send({ message: "Invalid token" });
+      return res.status(401).json({ message: "Invalid token" });
     }
 
-    req.userID = decoded.id;
+    const id = decoded.id
+
+    const {recordset: user} = await sql.query`SELECT * FROM utilizadores WHERE id = ${id}`
+
+    req.user = user[0];
     next();
   });
 }
