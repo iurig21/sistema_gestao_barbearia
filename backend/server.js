@@ -123,23 +123,25 @@ app.post("/register", async (req, res) => {
         .json({ message: "A password deve ter pelo menos 6 caracteres" });
     }
 
-    const { rowsAffected } =
+    const emailCheckResult =
       await sql.query`SELECT * FROM utilizadores WHERE email = ${email}`;
 
-    if (rowsAffected[0] > 0) {
+    if (emailCheckResult.recordset.length > 0) {
       return res.status(400).json({ message: "O email está a ser usado" });
     }
 
     const hashedPassword = bcrypt.hashSync(password);
 
     const result =
-      await sql.query`INSERT INTO utilizadores(nome,datanascimento,morada,email,telefone,genero,fotografia,documento,password) VALUES (${nome},${datanascimento},${morada},${email},${telefone},${genero},${fotografia},${documento},${hashedPassword})`;
+      await sql.query`INSERT INTO utilizadores(nome,datanascimento,morada,email,telefone,genero,fotografia,documento,password) OUTPUT INSERTED.id VALUES (${nome},${datanascimento},${morada},${email},${telefone},${genero},${fotografia},${documento},${hashedPassword})`;
 
-    if (result.rowsAffected[0] == 0) {
+    if (result.recordset.length == 0) {
       return res.status(400).json({ message: "Erro ao registar usuário" });
     }
 
-    res.status(201).json({ message: "Usuário criado com sucesso" });
+    res
+      .status(201)
+      .json({ message: "Usuário criado com sucesso", success: true });
   } catch (err) {
     console.error("Error signing up:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -160,33 +162,34 @@ app.post("/check-auth", authMiddleware, (req, res) =>
   res.status(200).json(req.user)
 );
 
-app.post("/services", roleMiddleware, async (req, res) => {
+app.post("/services", authMiddleware, roleMiddleware, async (req, res) => {
   try {
     const { nome, descricao, preco, imagem } = req.body;
 
-    if (!nome.trim() || !imagem.trim() || !preco.trim()) {
+    if (!nome.trim() || !imagem.trim() || !preco) {
       return res
         .status(400)
         .json({ message: "O nome,preco e imagem são obrigatórios" });
     }
 
-    const { rowsAffected, recordset } =
-      await sql.query`INSERT INTO servicos(nome,descricao,preco,imagem) VALUES (${nome},${descricao},${preco},${imagem})`;
+    const result =
+      await sql.query`INSERT INTO servicos(nome,descricao,preco,imagem) OUTPUT INSERTED.* VALUES (${nome},${descricao},${preco},${imagem})`;
 
-    if (rowsAffected[0] == 0) {
+    if (result.recordset.length == 0) {
       return res.status(400).json({ message: "Erro a criar serviço" });
     }
 
-    res.status(201).json(recordset[0]);
+    res.status(201).json(result.recordset[0]);
   } catch (err) {
     console.error("Eror creating a new service:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-app.get("/services", async (_, res) => {
+app.get("/services", authMiddleware, async (_, res) => {
   try {
-    const { recordset: services } = await sql.query`SELECT * FROM servicos`;
+    const { recordset: services } =
+      await sql.query`SELECT * FROM servicos ORDER BY preco ASC`;
 
     res.status(200).json(services);
   } catch (err) {
@@ -195,34 +198,41 @@ app.get("/services", async (_, res) => {
   }
 });
 
-app.delete("/services/:id", roleMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
+app.delete(
+  "/services/:id",
+  authMiddleware,
+  roleMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    if (!id.trim()) {
-      return res.status(400).json({ message: "Service ID not provided" });
+      if (!id.trim()) {
+        return res.status(400).json({ message: "Service ID not provided" });
+      }
+
+      const { rowsAffected } =
+        await sql.query`DELETE FROM servicos WHERE id = ${id}`;
+
+      if (rowsAffected[0] == 0) {
+        return res.status(400).json({ message: "Error deleting service" });
+      }
+
+      res.sendStatus(204);
+    } catch (err) {
+      console.error("Error deleting service:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    const { rowsAffected } =
-      await sql.query`DELETE FROM servicos WHERE id = ${id}`;
-
-    if (rowsAffected[0] == 0) {
-      return res.status(400).json({ message: "Error deleting service" });
-    }
-
-    res.sendStatus(204);
-  } catch (err) {
-    console.error("Error deleting service:", err);
-    res.status(500).json({ message: "Internal server error" });
   }
-});
+);
 
-app.put("/services/:id", roleMiddleware, async (req, res) => {
+app.put("/services/:id", authMiddleware, roleMiddleware, async (req, res) => {
   try {
     const { newName, newDescription, newPrice, newImage } = req.body;
 
+    const { id: serviceID } = req.params;
+
     const { rowsAffected } =
-      await sql.query`UPDATE servicos SET nome = ${newName}, descricao = ${newDescription}, preco = ${newPrice},imagem = ${newImage}`;
+      await sql.query`UPDATE servicos SET nome = ${newName}, descricao = ${newDescription}, preco = ${newPrice},imagem = ${newImage} WHERE id = ${serviceID}`;
 
     if (rowsAffected[0] == 0) {
       return res.status(400).json({ message: "Erro ao atualizar serviço" });
@@ -240,11 +250,23 @@ app.get("/appointments", authMiddleware, async (req, res) => {
     const { id: userID } = req.user;
 
     const { recordset: appointments } =
-      await sql.query`SELECT id,user_id,servico_id,CONVERT(VARCHAR(10), data, 103) AS data_formatada,CONVERT(VARCHAR(5), hora, 108) AS hora_formatada FROM marcacoes WHERE user_id = ${userID} ORDER BY data ASC, hora ASC`;
+      await sql.query`SELECT m.id,m.user_id,s.nome AS nome_servico,CONVERT(VARCHAR(10), m.data, 103) AS data_formatada,CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM marcacoes m INNER JOIN servicos s ON m.servico_id = s.id WHERE m.user_id = ${userID} ORDER BY m.data ASC, m.hora ASC`;
 
     res.status(200).json(appointments);
   } catch (err) {
     console.error("Error fetching appointments", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/appointments/all", authMiddleware, roleMiddleware, async (_, res) => {
+  try {
+    const { recordset: appointments } =
+      await sql.query`SELECT m.id, u.nome AS usuario_nome, s.nome AS servico_nome, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id ORDER BY m.data ASC, m.hora ASC`;
+
+    res.status(200).json(appointments);
+  } catch (err) {
+    console.error("Error fetching appointments:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -269,13 +291,10 @@ app.post("/appointments", authMiddleware, async (req, res) => {
     const currentDate = new Date();
 
     if (inputDate < currentDate) {
-      return res
-        .status(400)
-        .json({
-          message: "A data de marcação não pode ser anterior à data atual.",
-        });
+      return res.status(400).json({
+        message: "A data de marcação não pode ser anterior à data atual.",
+      });
     }
-
 
     if (!isValidTime(hora)) {
       return res.status(400).json({ message: "Hora inválida" });
@@ -289,48 +308,48 @@ app.post("/appointments", authMiddleware, async (req, res) => {
         .json({ message: "O horário deve estar entre 09:00 e 18:00" });
     }
 
-    const {rowsAffected} = await sql.query`SELECT * FROM marcacoes WHERE data = ${data} AND hora = ${hora}`
+    const availabilityCheck =
+      await sql.query`SELECT * FROM marcacoes WHERE data = ${data} AND hora = ${hora}`;
 
-    if(rowsAffected[0] > 0 ){
-      return res.status(400).json({message: "Sem disponibilidade"})
+    if (availabilityCheck.recordset.length > 0) {
+      return res.status(400).json({ message: "Sem disponibilidade" });
     }
 
-    const {recordset: appointment} = await sql.query`INSERT INTO marcacoes(user_id,servico_id,data,hora) VALUES (${userID},${servicoID},${data},${hora})`
+    const result =
+      await sql.query`INSERT INTO marcacoes(user_id,servico_id,data,hora) OUTPUT INSERTED.* VALUES (${userID},${servicoID},${data},${hora})`;
 
-    if(recordset.length == 0){
-      return res.status(400).json({message: "Erro ao criar marcação"})
+    if (result.recordset.length == 0) {
+      return res.status(400).json({ message: "Erro ao criar marcação" });
     }
 
-    res.status(201).json(appointment[0])
-
+    res.status(201).json(result.recordset[0]);
   } catch (err) {
     console.error("Error creating an appointment:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-app.delete("/appointments/:id",authMiddleware, async (req,res) => {
-  try{
+app.delete("/appointments/:id", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
 
-    const {id} = req.params
-
-    if(!id.trim()){
-      return res.status(400).json({message: "AppointmentID not provided"})
+    if (!id.trim()) {
+      return res.status(400).json({ message: "AppointmentID not provided" });
     }
 
-    const {rowsAffected} = await sql.query`DELETE FROM marcacoes WHERE id = ${id}`
+    const { rowsAffected } =
+      await sql.query`DELETE FROM marcacoes WHERE id = ${id}`;
 
-    if(rowsAffected[0] == 0){
-      return res.status(400).json({message: "Erro ao deletar marcação"})
+    if (rowsAffected[0] == 0) {
+      return res.status(400).json({ message: "Erro ao deletar marcação" });
     }
 
-    res.sendStatus(204)
-
-  }catch(err){
-    console.err("Eror deleting appointment:",err)
-    res.status(500).json({message: "Internal server error"})
+    res.sendStatus(204);
+  } catch (err) {
+    console.error("Eror deleting appointment:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
-})
+});
 
 connecttoDB()
   .then(() => {

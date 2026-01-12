@@ -23,6 +23,7 @@ function authMiddleware(req, res, next) {
     const {recordset: user} = await sql.query`SELECT * FROM utilizadores WHERE id = ${id}`
 
     req.user = user[0];
+    req.token = token
     next();
   });
 }
