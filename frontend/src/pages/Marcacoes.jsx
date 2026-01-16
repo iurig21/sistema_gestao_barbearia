@@ -2,7 +2,7 @@ import Navbar from "../components/Navbar.jsx";
 import { CirclePlus } from "lucide-react";
 import AppointmentsForm from "../components/AppointmentsForm.jsx";
 import Appointments from "../components/Appointments.jsx";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
 
 function Marcacoes() {
@@ -13,11 +13,7 @@ function Marcacoes() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchMarcacoes();
-  }, [token]);
-
-  const fetchMarcacoes = async () => {
+  const fetchMarcacoes = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -42,7 +38,11 @@ function Marcacoes() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    fetchMarcacoes();
+  }, [fetchMarcacoes]);
 
   const handleDelete = async (id) => {
     if (!confirm("Tem certeza que deseja cancelar esta marcação?")) return;

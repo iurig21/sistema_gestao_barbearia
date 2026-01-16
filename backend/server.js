@@ -262,7 +262,7 @@ app.get("/appointments", authMiddleware, async (req, res) => {
 app.get("/appointments/all", authMiddleware, roleMiddleware, async (_, res) => {
   try {
     const { recordset: appointments } =
-      await sql.query`SELECT m.id, u.nome AS usuario_nome, s.nome AS servico_nome, b.nome AS barbeiro_nome, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id LEFT JOIN barbeiros b ON m.barbeiro_id = b.id ORDER BY m.data ASC, m.hora ASC`;
+      await sql.query`SELECT m.id, u.nome AS usuario_nome, s.nome AS servico_nome, b.nome AS barbeiro_nome, m.barbeiro_id, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id LEFT JOIN barbeiros b ON m.barbeiro_id = b.id ORDER BY m.data ASC, m.hora ASC`;
 
     res.status(200).json(appointments);
   } catch (err) {

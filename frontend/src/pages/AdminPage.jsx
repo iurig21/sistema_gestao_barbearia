@@ -33,6 +33,9 @@ function AdminPage() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAddBarbeiroModal, setShowAddBarbeiroModal] = useState(false);
+  const [filterBarbeiro, setFilterBarbeiro] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterDateInput, setFilterDateInput] = useState("");
 
   const { token, Logout } = useContext(AuthContext);
 
@@ -276,6 +279,13 @@ function AdminPage() {
       .catch((err) => console.error(err));
   };
 
+  const filteredMarcacoes = marcacoes.filter((marcacao) => {
+    const matchesBarbeiro =
+      !filterBarbeiro || marcacao.barbeiro_id === parseInt(filterBarbeiro);
+    const matchesDate = !filterDate || marcacao.data_formatada === filterDate;
+    return matchesBarbeiro && matchesDate;
+  });
+
   return (
     <div className="admin-container">
       <div className="admin-header">
@@ -290,9 +300,62 @@ function AdminPage() {
         <div className="success-message"> Marcação excluída com sucesso! </div>
       )}
 
+      <div className="filter-section">
+        <div className="filter-group">
+          <label htmlFor="filter-barbeiro">Filtrar por Barbeiro:</label>
+          <select
+            id="filter-barbeiro"
+            className="filter-select"
+            value={filterBarbeiro}
+            onChange={(e) => setFilterBarbeiro(e.target.value)}
+          >
+            <option value="">Todos os barbeiros</option>
+            {barbeiros.map((barbeiro) => (
+              <option key={barbeiro.id} value={barbeiro.id}>
+                {barbeiro.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="filter-date">Filtrar por Data:</label>
+          <input
+            type="date"
+            id="filter-date"
+            className="filter-input"
+            value={filterDateInput}
+            onChange={(e) => {
+              const selectedDate = e.target.value;
+              setFilterDateInput(selectedDate);
+              if (selectedDate) {
+                const [year, month, day] = selectedDate.split("-");
+                const formattedDate = `${day}/${month}/${year}`;
+                setFilterDate(formattedDate);
+              } else {
+                setFilterDate("");
+              }
+            }}
+          />
+        </div>
+
+        {(filterBarbeiro || filterDate) && (
+          <button
+            className="btn-clear-filters"
+            onClick={() => {
+              setFilterBarbeiro("");
+              setFilterDate("");
+              setFilterDateInput("");
+            }}
+          >
+            Limpar Filtros
+          </button>
+        )}
+      </div>
+
       {isLoading ? (
         <Loading size={22}>marcações</Loading>
-      ) : marcacoes.length === 0 ? (
+      ) : filteredMarcacoes.length === 0 ? (
         <div className="empty-state">
           <Calendar size={48} />
           <p>Nenhuma marcação encontrada</p>
@@ -317,7 +380,7 @@ function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {marcacoes.map((marcacao, idx) => (
+              {filteredMarcacoes.map((marcacao, idx) => (
                 <tr key={idx}>
                   <td className="user-cell">{marcacao.usuario_nome}</td>
                   <td>{marcacao.data_formatada}</td>

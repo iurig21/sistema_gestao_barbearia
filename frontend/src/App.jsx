@@ -2,7 +2,7 @@ import "./styles.css";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/registerPage.jsx";
 import Services from "./pages/Services.jsx";
-import AdminPage from "./pages/AdminPage.jsx";
+import AdminPage from "./pages/adminPage.jsx";
 import Profile from "./pages/Profile.jsx";
 import Marcacoes from "./pages/Marcacoes.jsx";
 import { Routes, Route, Navigate } from "react-router";
