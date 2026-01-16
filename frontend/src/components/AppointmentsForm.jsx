@@ -1,13 +1,15 @@
-import { useState, useEffect, useContext } from "react";
-import { X, Calendar, Clock, Scissors } from "lucide-react";
+import { useState, useEffect, useContext, useCallback } from "react";
+import { X, Calendar, Clock, Scissors, User } from "lucide-react";
 import { AuthContext } from "../contexts/authContext";
 
 function AppointmentsForm({ isOpen, onClose, onSuccess }) {
   const [services, setServices] = useState([]);
+  const [barbeiros, setBarbeiros] = useState([]);
   const [formData, setFormData] = useState({
     servicoID: "",
     data: "",
     hora: "",
+    barbeiroID: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -28,13 +30,7 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
 
   const timeSlots = generateTimeSlots();
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchServices();
-    }
-  });
-
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       const response = await fetch("http://localhost:3000/services", {
         method: "GET",
@@ -53,19 +49,41 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
       console.error(err);
       setError(err.message);
     }
-  };
+  }, [token]);
 
-  const fetchBookedSlots = async (date) => {
+  const fetchBarbeiros = useCallback(async () => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/appointments/booked/${date}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch("http://localhost:3000/barbeiros", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao carregar barbeiros");
+      }
+
+      const data = await response.json();
+      setBarbeiros(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  }, [token]);
+
+  const fetchBookedSlots = async (date, barbeiroID) => {
+    try {
+      const url = barbeiroID
+        ? `http://localhost:3000/appointments/booked/${date}?barbeiroId=${barbeiroID}`
+        : `http://localhost:3000/appointments/booked/${date}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Erro ao carregar horários");
@@ -78,6 +96,13 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
       setBookedSlots([]);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchServices();
+      fetchBarbeiros();
+    }
+  }, [isOpen, fetchBarbeiros, fetchServices]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,7 +125,7 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
         throw new Error(data.message || "Erro ao criar marcação");
       }
 
-      setFormData({ servicoID: "", data: "", hora: "", notas: "" });
+      setFormData({ servicoID: "", data: "", hora: "", barbeiroID: "" });
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -115,8 +140,10 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (name === "data" && value) {
-      fetchBookedSlots(value);
+    if (name === "data" && value && formData.barbeiroID) {
+      fetchBookedSlots(value, formData.barbeiroID);
+    } else if (name === "barbeiroID" && value && formData.data) {
+      fetchBookedSlots(formData.data, value);
     }
   };
 
@@ -179,6 +206,28 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
             </select>
           </div>
 
+          <div className="form-group">
+            <label htmlFor="barbeiroID">
+              <User size={18} />
+              Barbeiro *
+            </label>
+            <select
+              id="barbeiroID"
+              name="barbeiroID"
+              value={formData.barbeiroID}
+              onChange={handleChange}
+              required
+              className="form-select"
+            >
+              <option value="">Selecione um barbeiro</option>
+              {barbeiros.map((barbeiro) => (
+                <option key={barbeiro.id} value={barbeiro.id}>
+                  {barbeiro.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="data">
@@ -209,12 +258,14 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
                 onChange={handleChange}
                 required
                 className="form-select"
-                disabled={!formData.data}
+                disabled={!formData.data || !formData.barbeiroID}
               >
                 <option value="">
-                  {formData.data
-                    ? "Selecione uma hora"
-                    : "Selecione primeiro uma data"}
+                  {!formData.barbeiroID
+                    ? "Selecione primeiro um barbeiro"
+                    : !formData.data
+                    ? "Selecione primeiro uma data"
+                    : "Selecione uma hora"}
                 </option>
                 {timeSlots.map((time) => {
                   const isBooked = bookedSlots.includes(time);

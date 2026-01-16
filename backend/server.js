@@ -250,7 +250,7 @@ app.get("/appointments", authMiddleware, async (req, res) => {
     const { id: userID } = req.user;
 
     const { recordset: appointments } =
-      await sql.query`SELECT m.id,m.user_id,s.nome AS nome_servico,CONVERT(VARCHAR(10), m.data, 103) AS data_formatada,CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM marcacoes m INNER JOIN servicos s ON m.servico_id = s.id WHERE m.user_id = ${userID} ORDER BY m.data ASC, m.hora ASC`;
+      await sql.query`SELECT m.id,m.user_id,s.nome AS nome_servico,b.nome AS barbeiro_nome,CONVERT(VARCHAR(10), m.data, 103) AS data_formatada,CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM marcacoes m INNER JOIN servicos s ON m.servico_id = s.id LEFT JOIN barbeiros b ON m.barbeiro_id = b.id WHERE m.user_id = ${userID} ORDER BY m.data ASC, m.hora ASC`;
 
     res.status(200).json(appointments);
   } catch (err) {
@@ -262,7 +262,7 @@ app.get("/appointments", authMiddleware, async (req, res) => {
 app.get("/appointments/all", authMiddleware, roleMiddleware, async (_, res) => {
   try {
     const { recordset: appointments } =
-      await sql.query`SELECT m.id, u.nome AS usuario_nome, s.nome AS servico_nome, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id ORDER BY m.data ASC, m.hora ASC`;
+      await sql.query`SELECT m.id, u.nome AS usuario_nome, s.nome AS servico_nome, b.nome AS barbeiro_nome, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id LEFT JOIN barbeiros b ON m.barbeiro_id = b.id ORDER BY m.data ASC, m.hora ASC`;
 
     res.status(200).json(appointments);
   } catch (err) {
@@ -274,15 +274,22 @@ app.get("/appointments/all", authMiddleware, roleMiddleware, async (_, res) => {
 app.get("/appointments/booked/:date", authMiddleware, async (req, res) => {
   try {
     const { date } = req.params;
+    const { barbeiroId } = req.query;
 
     if (!date || !isDateValid(date)) {
       return res.status(400).json({ message: "Data inválida" });
     }
 
-    const { recordset: bookedSlots } =
-      await sql.query`SELECT CONVERT(VARCHAR(5), hora, 108) AS hora FROM marcacoes WHERE data = ${date}`;
+    let query;
+    if (barbeiroId) {
+      query =
+        await sql.query`SELECT CONVERT(VARCHAR(5), hora, 108) AS hora FROM marcacoes WHERE data = ${date} AND barbeiro_id = ${barbeiroId}`;
+    } else {
+      query =
+        await sql.query`SELECT CONVERT(VARCHAR(5), hora, 108) AS hora FROM marcacoes WHERE data = ${date}`;
+    }
 
-    const bookedHours = bookedSlots.map((slot) => slot.hora);
+    const bookedHours = query.recordset.map((slot) => slot.hora);
     res.status(200).json(bookedHours);
   } catch (err) {
     console.error("Error fetching booked slots:", err);
@@ -293,12 +300,12 @@ app.get("/appointments/booked/:date", authMiddleware, async (req, res) => {
 app.post("/appointments", authMiddleware, async (req, res) => {
   try {
     const { id: userID } = req.user;
-    const { servicoID, data, hora,barbeiroID } = req.body;
+    const { servicoID, data, hora, barbeiroID } = req.body;
 
-    if (!data.trim() || !hora.trim()) {
+    if (!data.trim() || !hora.trim() || !barbeiroID) {
       return res
         .status(400)
-        .json({ message: "A data e hora são obrigatórios" });
+        .json({ message: "A data, hora e barbeiro são obrigatórios" });
     }
 
     if (!isDateValid(data)) {
@@ -328,14 +335,14 @@ app.post("/appointments", authMiddleware, async (req, res) => {
     }
 
     const availabilityCheck =
-      await sql.query`SELECT * FROM marcacoes WHERE data = ${data} AND hora = ${hora}`;
+      await sql.query`SELECT * FROM marcacoes WHERE data = ${data} AND hora = ${hora} AND barbeiro_id = ${barbeiroID}`;
 
     if (availabilityCheck.recordset.length > 0) {
       return res.status(400).json({ message: "Sem disponibilidade" });
     }
 
     const result =
-      await sql.query`INSERT INTO marcacoes(user_id,servico_id,data,hora) OUTPUT INSERTED.* VALUES (${userID},${servicoID},${data},${hora})`;
+      await sql.query`INSERT INTO marcacoes(user_id,servico_id,data,hora,barbeiro_id) OUTPUT INSERTED.* VALUES (${userID},${servicoID},${data},${hora},${barbeiroID})`;
 
     if (result.recordset.length == 0) {
       return res.status(400).json({ message: "Erro ao criar marcação" });
@@ -369,6 +376,77 @@ app.delete("/appointments/:id", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.get("/barbeiros", authMiddleware, async (req, res) => {
+  try {
+    const { recordset: barbeiros } = await sql.query`SELECT * FROM barbeiros`;
+
+    res.status(200).json(barbeiros);
+  } catch (err) {
+    console.error("Erro ao retornar barbeiros:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/barbeiro", authMiddleware, roleMiddleware, async (req, res) => {
+  try {
+    const { nome } = req.body;
+
+    if (!nome.trim()) {
+      return res
+        .status(400)
+        .json({ message: "O nome do barbeiro não pode ser nulo" });
+    }
+
+    const barbeiroExists =
+      await sql.query`SELECT * FROM barbeiros WHERE nome = ${nome}`;
+
+    if (barbeiroExists.recordset.length > 0) {
+      return res.status(400).json({ message: "O barbeiro já existe" });
+    }
+
+    const result =
+      await sql.query`INSERT INTO barbeiros(nome) OUTPUT INSERTED.* VALUES (${nome})`;
+
+    if (result.recordset.length == 0) {
+      return res.status(400).json({ message: "Erro ao criar barbeiro" });
+    }
+
+    res.status(201).json(result.recordset[0]);
+  } catch (err) {
+    console.error("Error creating a colaborator:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.delete(
+  "/barbeiro/:id",
+  authMiddleware,
+  roleMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!id.trim()) {
+        return res
+          .status(400)
+          .json({ message: "O id do barbeiro não foi providenciado" });
+      }
+
+      const { rowsAffected } =
+        await sql.query`DELETE FROM barbeiros WHERE id = ${id}`;
+
+      if (rowsAffected[0] == 0) {
+        return res.status(400).json({ message: "Erro ao deletar barbeiro" });
+      }
+
+      res.sendStatus(204);
+    } catch (err) {
+      console.error("Erro ao deletar barbeiro:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 connecttoDB()
   .then(() => {

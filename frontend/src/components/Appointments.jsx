@@ -1,9 +1,9 @@
-import { Loader, Calendar, Clock, Trash2 } from "lucide-react";
+import { Loader, Calendar, Clock, Trash2, User } from "lucide-react";
 import Loading from "./Loading";
 
 function Appointments({ marcacoes, isLoading, error, onDelete }) {
-  if (isLoading) return <Loading size={22}>marcações</Loading>
-  
+  if (isLoading) return <Loading size={22}>marcações</Loading>;
+
   if (error) {
     return <div className="error-message">{error}</div>;
   }
@@ -36,6 +36,15 @@ function Appointments({ marcacoes, isLoading, error, onDelete }) {
             <h3>
               <span className="label">Serviço:</span> {marcacao.nome_servico}
             </h3>
+            {marcacao.barbeiro_nome && (
+              <div className="appointment-barbeiro">
+                <User size={16} />
+                <span>
+                  <span className="label">Barbeiro:</span>{" "}
+                  {marcacao.barbeiro_nome}
+                </span>
+              </div>
+            )}
           </div>
           <div className="appointment-footer">
             <button

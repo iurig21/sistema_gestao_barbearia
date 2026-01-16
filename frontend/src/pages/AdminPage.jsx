@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 import ServiceForm from "../components/ServiceForm.jsx";
+import BarbeirosForm from "../components/BarbeirosForm.jsx";
 
 function AdminPage() {
   const [marcacoes, setMarcacoes] = useState([]);
@@ -20,6 +21,7 @@ function AdminPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [services, setServices] = useState([]);
+  const [barbeiros, setBarbeiros] = useState([]);
   const [editingService, setEditingService] = useState(null);
   const [editForm, setEditForm] = useState({
     nome: "",
@@ -30,6 +32,7 @@ function AdminPage() {
   const [uploadingEditImage, setUploadingEditImage] = useState(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddBarbeiroModal, setShowAddBarbeiroModal] = useState(false);
 
   const { token, Logout } = useContext(AuthContext);
 
@@ -92,6 +95,35 @@ function AdminPage() {
     };
 
     fetchServices();
+  }, [token]);
+
+  useEffect(() => {
+    const fetchBarbeiros = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("http://localhost:3000/barbeiros", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const responseJSON = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseJSON.message || "Erro a consultar barbeiros");
+        }
+
+        setBarbeiros(responseJSON);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBarbeiros();
   }, [token]);
 
   const handleDelete = async (id) => {
@@ -210,6 +242,40 @@ function AdminPage() {
     setServices([...services, newService]);
   };
 
+  const handleDeleteBarbeiro = async (id) => {
+    if (!confirm("Tem certeza que deseja excluir este barbeiro?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/barbeiro/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setBarbeiros(barbeiros.filter((barbeiro) => barbeiro.id !== id));
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao excluir barbeiro");
+    }
+  };
+
+  const handleBarbeiroAdded = () => {
+    fetch("http://localhost:3000/barbeiros", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setBarbeiros(data))
+      .catch((err) => console.error(err));
+  };
+
   return (
     <div className="admin-container">
       <div className="admin-header">
@@ -246,6 +312,7 @@ function AdminPage() {
                   <Clock size={16} /> Hora
                 </th>
                 <th>Serviço</th>
+                <th>Barbeiro</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -256,6 +323,9 @@ function AdminPage() {
                   <td>{marcacao.data_formatada}</td>
                   <td>{marcacao.hora_formatada}</td>
                   <td className="service-cell">{marcacao.servico_nome}</td>
+                  <td className="barbeiro-cell">
+                    {marcacao.barbeiro_nome || "N/A"}
+                  </td>
                   <td>
                     <button
                       className="btn-table-delete"
@@ -436,11 +506,64 @@ function AdminPage() {
         </div>
       )}
 
+      <div className="admin-section-divider"></div>
+
+      <div className="admin-header">
+        <h2>Gestão de Barbeiros</h2>
+        <button
+          className="btn-add-service"
+          onClick={() => setShowAddBarbeiroModal(true)}
+        >
+          <Plus size={16} />
+          Novo Barbeiro
+        </button>
+      </div>
+
+      {barbeiros.length === 0 ? (
+        <div className="empty-state">
+          <User size={48} />
+          <p>Nenhum barbeiro encontrado</p>
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {barbeiros.map((barbeiro) => (
+                <tr key={barbeiro.id}>
+                  <td className="barbeiro-name-cell">{barbeiro.nome}</td>
+                  <td>
+                    <button
+                      className="btn-table-delete"
+                      onClick={() => handleDeleteBarbeiro(barbeiro.id)}
+                      title="Excluir barbeiro"
+                    >
+                      <Trash2 size={16} />
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <ServiceForm
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSuccess={handleServiceAdded}
         token={token}
+      />
+      <BarbeirosForm
+        isOpen={showAddBarbeiroModal}
+        onClose={() => setShowAddBarbeiroModal(false)}
+        onSuccess={handleBarbeiroAdded}
       />
     </div>
   );
