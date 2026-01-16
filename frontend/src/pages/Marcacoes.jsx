@@ -80,7 +80,7 @@ function Marcacoes() {
           <h1>As Minhas Marcações</h1>
           <button
             className="btn-new-appointment"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsOpen(true)}
           >
             <CirclePlus size={20} /> Nova marcação
           </button>

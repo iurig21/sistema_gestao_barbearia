@@ -11,6 +11,7 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [bookedSlots, setBookedSlots] = useState([]);
 
   const { token } = useContext(AuthContext);
 
@@ -54,6 +55,30 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
     }
   };
 
+  const fetchBookedSlots = async (date) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/appointments/booked/${date}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao carregar horários");
+      }
+
+      const data = await response.json();
+      setBookedSlots(data);
+    } catch (err) {
+      console.error(err);
+      setBookedSlots([]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -89,6 +114,10 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "data" && value) {
+      fetchBookedSlots(value);
+    }
   };
 
   const handleBackdropClick = (e) => {
@@ -180,13 +209,21 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
                 onChange={handleChange}
                 required
                 className="form-select"
+                disabled={!formData.data}
               >
-                <option value="">Selecione uma hora</option>
-                {timeSlots.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
+                <option value="">
+                  {formData.data
+                    ? "Selecione uma hora"
+                    : "Selecione primeiro uma data"}
+                </option>
+                {timeSlots.map((time) => {
+                  const isBooked = bookedSlots.includes(time);
+                  return (
+                    <option key={time} value={time} disabled={isBooked}>
+                      {time} {isBooked ? "(Ocupado)" : ""}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>

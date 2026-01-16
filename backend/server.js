@@ -271,10 +271,29 @@ app.get("/appointments/all", authMiddleware, roleMiddleware, async (_, res) => {
   }
 });
 
+app.get("/appointments/booked/:date", authMiddleware, async (req, res) => {
+  try {
+    const { date } = req.params;
+
+    if (!date || !isDateValid(date)) {
+      return res.status(400).json({ message: "Data inválida" });
+    }
+
+    const { recordset: bookedSlots } =
+      await sql.query`SELECT CONVERT(VARCHAR(5), hora, 108) AS hora FROM marcacoes WHERE data = ${date}`;
+
+    const bookedHours = bookedSlots.map((slot) => slot.hora);
+    res.status(200).json(bookedHours);
+  } catch (err) {
+    console.error("Error fetching booked slots:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.post("/appointments", authMiddleware, async (req, res) => {
   try {
     const { id: userID } = req.user;
-    const { servicoID, data, hora } = req.body;
+    const { servicoID, data, hora,barbeiroID } = req.body;
 
     if (!data.trim() || !hora.trim()) {
       return res

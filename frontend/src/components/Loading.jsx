@@ -1,10 +1,10 @@
 import { Loader } from "lucide-react";
 
-function Loading() {
+function Loading({children, size}) {
   return (
     <div className="loading-container">
-      <Loader className="spin" size={32} />
-      <p>A carregar marcações...</p>
+      <Loader className="spin" size={size} />
+      <p>A carregar {children}...</p>
     </div>
   );
 }

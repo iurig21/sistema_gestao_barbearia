@@ -3,6 +3,7 @@ import { AuthContext } from "../contexts/authContext.jsx";
 import { useContext } from "react";
 import { Loader } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
+import Loading from "../components/Loading.jsx";
 
 function Services() {
   const [services, setServices] = useState([]);
@@ -49,10 +50,7 @@ function Services() {
         {error && <p className="error-message"> {error} </p>}
 
         {isLoading ? (
-          <div className="loading-container">
-            <h3> A carregar serviços ... </h3>
-            <Loader className="spin" size={20} />
-          </div>
+          <Loading size={32}>serviços</Loading>
         ) : (
           <div className="services-grid">
             {services.map((service) => (

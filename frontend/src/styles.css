@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: #0f0f0f;
@@ -887,6 +891,235 @@ body {
 .btn-table-delete:hover {
   background: rgba(220, 38, 38, 0.1);
   transform: translateY(-1px);
+}
+
+.btn-table-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #c8a870;
+  border: 1px solid #c8a870;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-table-edit:hover {
+  background: rgba(200, 168, 112, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-table-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #10b981;
+  color: white;
+  border: 1px solid #10b981;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-table-save:hover {
+  background: #059669;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-table-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #6b7280;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-table-cancel:hover {
+  background: rgba(107, 114, 128, 0.1);
+  transform: translateY(-1px);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.edit-input {
+  width: 100%;
+  padding: 6px 12px;
+  background: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: #c8a870;
+}
+
+.service-name-cell {
+  font-weight: 600;
+  color: #c8a870;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: #10b981;
+}
+
+.image-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.service-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+}
+
+.admin-section-divider {
+  height: 1px;
+  background: #2a2a2a;
+  margin: 48px 0;
+}
+
+.admin-header h2 {
+  font-size: 24px;
+  color: #c8a870;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.btn-add-service {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #c8a870;
+  color: #0f0f0f;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-service:hover {
+  background: #d4b885;
+  transform: translateY(-2px);
+}
+
+.service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+}
+
+.service-form textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.service-form textarea:focus {
+  outline: none;
+  border-color: #c8a870;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.btn-modal-cancel {
+  padding: 10px 24px;
+  background: transparent;
+  color: #888;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+}
+
+.btn-modal-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #c8a870;
+  color: #0f0f0f;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.btn-modal-submit:hover:not(:disabled) {
+  background: #d4b885;
+  transform: translateY(-1px);
+}
+
+.btn-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 1024px) {

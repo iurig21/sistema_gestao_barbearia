@@ -2,7 +2,7 @@ import { Loader, Calendar, Clock, Trash2 } from "lucide-react";
 import Loading from "./Loading";
 
 function Appointments({ marcacoes, isLoading, error, onDelete }) {
-  if (isLoading) return <Loading/>
+  if (isLoading) return <Loading size={22}>marcações</Loading>
   
   if (error) {
     return <div className="error-message">{error}</div>;
