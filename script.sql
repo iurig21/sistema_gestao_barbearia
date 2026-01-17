@@ -19,7 +19,7 @@ CREATE TABLE utilizadores (
 
 CREATE TABLE barbeiros(
 	id INT PRIMARY KEY identity(1,1),
-	nome VARCHAR(30) NOT NULL,
+	nome VARCHAR(30) NOT NULL
 )
 
 CREATE TABLE servicos (
@@ -32,9 +32,9 @@ CREATE TABLE servicos (
 
 CREATE TABLE marcacoes (
 	id INT PRIMARY KEY identity(1,1),
-	user_id INT REFERENCES utilizadores(id),
+	user_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
 	servico_id INT REFERENCES servicos(id),
-	barbeiro_id INT REFERENCES barbeiros(id);
+	barbeiro_id INT REFERENCES barbeiros(id),
 	data DATE NOT NULL,
 	hora TIME NOT NULL
 )

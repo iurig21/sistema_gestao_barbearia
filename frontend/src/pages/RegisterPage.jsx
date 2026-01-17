@@ -102,7 +102,7 @@ function RegisterPage() {
 
       setTimeout(() => {
         navigate("/login");
-      }, 1500);
+      }, 1000);
     } catch (err) {
       setError(err.message);
     }

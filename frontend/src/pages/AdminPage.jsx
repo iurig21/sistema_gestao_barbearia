@@ -36,6 +36,7 @@ function AdminPage() {
   const [filterBarbeiro, setFilterBarbeiro] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterDateInput, setFilterDateInput] = useState("");
+  const [users, setUsers] = useState([]);
 
   const { token, Logout } = useContext(AuthContext);
 
@@ -127,6 +128,37 @@ function AdminPage() {
     };
 
     fetchBarbeiros();
+  }, [token]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("http://localhost:3000/users", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const responseJSON = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            responseJSON.message || "Erro a consultar utilizadores",
+          );
+        }
+
+        setUsers(responseJSON);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, [token]);
 
   const handleDelete = async (id) => {
@@ -226,7 +258,7 @@ function AdminPage() {
 
       if (response.ok) {
         setServices(
-          services.map((s) => (s.id === id ? { ...s, ...editForm } : s))
+          services.map((s) => (s.id === id ? { ...s, ...editForm } : s)),
         );
         setEditingService(null);
       }
@@ -258,8 +290,6 @@ function AdminPage() {
 
       if (response.ok) {
         setBarbeiros(barbeiros.filter((barbeiro) => barbeiro.id !== id));
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
       }
     } catch (err) {
       console.error(err);
@@ -285,6 +315,34 @@ function AdminPage() {
     const matchesDate = !filterDate || marcacao.data_formatada === filterDate;
     return matchesBarbeiro && matchesDate;
   });
+
+  const deleteUser = async (id) => {
+    if (!confirm("Deseja excluir este utilizador?")) return;
+
+    try {
+      const response = await fetch("http://localhost:3000/users/" + id, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setUsers(users.filter((user) => parseInt(user.id) !== parseInt(id)));
+        setMarcacoes(
+          marcacoes.filter(
+            (marcacao) => parseInt(marcacao.user_id) !== parseInt(id),
+          ),
+        );
+        return;
+      }
+
+      setError("Erro ao excluir utilizador!");
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      setError("Erro ao excluir utilizador");
+    }
+  };
 
   return (
     <div className="admin-container">
@@ -353,6 +411,10 @@ function AdminPage() {
         )}
       </div>
 
+      <div className="admin-header">
+        <h2>Marcações</h2>
+      </div>
+
       {isLoading ? (
         <Loading size={22}>marcações</Loading>
       ) : filteredMarcacoes.length === 0 ? (
@@ -409,7 +471,159 @@ function AdminPage() {
       <div className="admin-section-divider"></div>
 
       <div className="admin-header">
-        <h2>Gestão de Serviços</h2>
+        <h2>Utilizadores</h2>
+      </div>
+
+      {users.length === 0 ? (
+        <div className="empty-state">
+          <User size={48} />
+          <p>Nenhum utilizador encontrado</p>
+        </div>
+      ) : (
+        <div className="users-table-container">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telemóvel</th>
+                <th>Data Nascimento</th>
+                <th>Género</th>
+                <th>Role</th>
+                <th>Fotografia</th>
+                <th>Documento ID</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="user-cell">{user.nome}</td>
+                  <td>{user.email}</td>
+                  <td>{user.telefone}</td>
+                  <td>
+                    {user.datanascimento
+                      ? new Date(user.datanascimento).toLocaleDateString(
+                          "pt-PT",
+                        )
+                      : "N/A"}
+                  </td>
+                  <td>{user.genero || "N/A"}</td>
+                  <td className="barbeiro-cell">{user.role}</td>
+                  <td className="image-cell">
+                    {user.fotografia ? (
+                      <img
+                        src={`http://localhost:3000/uploads/${user.fotografia}`}
+                        alt={user.nome}
+                        width="60"
+                        height="60"
+                        style={{
+                          cursor: "pointer",
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          border: "1px solid #2a2a2a",
+                          display: "block",
+                          margin: "0 auto",
+                        }}
+                        onClick={() =>
+                          window.open(
+                            `http://localhost:3000/uploads/${user.fotografia}`,
+                            "_blank",
+                          )
+                        }
+                        title="Clique para ver em tamanho completo"
+                      />
+                    ) : (
+                      <span style={{ color: "#888", fontSize: "12px" }}>
+                        Sem foto
+                      </span>
+                    )}
+                  </td>
+                  <td className="image-cell">
+                    {user.documento ? (
+                      user.documento.endsWith(".pdf") ? (
+                        <div
+                          style={{
+                            width: "60px",
+                            height: "60px",
+                            cursor: "pointer",
+                            position: "relative",
+                            margin: "0 auto",
+                            overflow: "hidden",
+                            borderRadius: "6px",
+                            border: "1px solid #2a2a2a",
+                            background: "#0f0f0f",
+                          }}
+                          onClick={() =>
+                            window.open(
+                              `http://localhost:3000/uploads/${user.documento}`,
+                              "_blank",
+                            )
+                          }
+                          title="Clique para ver o documento PDF completo"
+                        >
+                          <iframe
+                            src={`http://localhost:3000/uploads/${user.documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                            width="60"
+                            height="60"
+                            style={{
+                              border: "none",
+                              pointerEvents: "none",
+                              transform: "scale(1)",
+                              transformOrigin: "0 0",
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={`http://localhost:3000/uploads/${user.documento}`}
+                          alt="Documento"
+                          width="60"
+                          height="60"
+                          style={{
+                            cursor: "pointer",
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                            border: "1px solid #2a2a2a",
+                            display: "block",
+                            margin: "0 auto",
+                          }}
+                          onClick={() =>
+                            window.open(
+                              `http://localhost:3000/uploads/${user.documento}`,
+                              "_blank",
+                            )
+                          }
+                          title="Clique para ver em tamanho completo"
+                        />
+                      )
+                    ) : (
+                      <span style={{ color: "#888", fontSize: "12px" }}>
+                        Sem documento
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      className="btn-table-delete"
+                      onClick={() => deleteUser(user.id)}
+                      title="Excluir utilizador"
+                    >
+                      <Trash2 size={16} />
+                      Excluir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="admin-section-divider"></div>
+
+      <div className="admin-header">
+        <h2>Serviços</h2>
         <button
           className="btn-add-service"
           onClick={() => setShowAddModal(true)}
@@ -479,9 +693,23 @@ function AdminPage() {
                           style={{
                             display: "flex",
                             flexDirection: "column",
-                            gap: "4px",
+                            gap: "8px",
+                            alignItems: "center",
                           }}
                         >
+                          {editForm.imagem && !uploadingEditImage && (
+                            <img
+                              src={`http://localhost:3000/uploads/${editForm.imagem}`}
+                              alt="Preview"
+                              style={{
+                                width: "60px",
+                                height: "60px",
+                                objectFit: "cover",
+                                borderRadius: "6px",
+                                border: "1px solid #2a2a2a",
+                              }}
+                            />
+                          )}
                           <input
                             type="file"
                             className="edit-input"
@@ -498,14 +726,7 @@ function AdminPage() {
                             <span
                               style={{ color: "#C8A870", fontSize: "11px" }}
                             >
-                              Uploading...
-                            </span>
-                          )}
-                          {editForm.imagem && !uploadingEditImage && (
-                            <span
-                              style={{ color: "#10b981", fontSize: "11px" }}
-                            >
-                              ✓ {editForm.imagem}
+                              A carregar...
                             </span>
                           )}
                         </div>
@@ -572,7 +793,7 @@ function AdminPage() {
       <div className="admin-section-divider"></div>
 
       <div className="admin-header">
-        <h2>Gestão de Barbeiros</h2>
+        <h2>Barbeiros</h2>
         <button
           className="btn-add-service"
           onClick={() => setShowAddBarbeiroModal(true)}

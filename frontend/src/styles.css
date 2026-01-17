@@ -1066,9 +1066,12 @@ body {
 }
 
 .image-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.image-cell img {
+  display: inline-block;
 }
 
 .service-thumbnail {
@@ -1077,12 +1080,40 @@ body {
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid #2a2a2a;
+  transition: transform 0.2s ease;
+}
+
+.service-thumbnail:hover {
+  transform: scale(1.5);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .admin-section-divider {
   height: 1px;
   background: #2a2a2a;
   margin: 48px 0;
+}
+
+.users-table-container {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.users-table-container .admin-table {
+  min-width: 1200px;
+  table-layout: auto;
+}
+
+.users-table-container .admin-table td {
+  white-space: nowrap;
+}
+
+.users-table-container .image-cell {
+  padding: 8px 20px;
+  white-space: normal;
 }
 
 .admin-header h2 {

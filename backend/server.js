@@ -77,7 +77,7 @@ app.post("/login", async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      }
+      },
     );
 
     res.json(token);
@@ -159,7 +159,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 });
 
 app.post("/check-auth", authMiddleware, (req, res) =>
-  res.status(200).json(req.user)
+  res.status(200).json(req.user),
 );
 
 app.post("/services", authMiddleware, roleMiddleware, async (req, res) => {
@@ -222,7 +222,7 @@ app.delete(
       console.error("Error deleting service:", err);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 );
 
 app.put("/services/:id", authMiddleware, roleMiddleware, async (req, res) => {
@@ -262,7 +262,7 @@ app.get("/appointments", authMiddleware, async (req, res) => {
 app.get("/appointments/all", authMiddleware, roleMiddleware, async (_, res) => {
   try {
     const { recordset: appointments } =
-      await sql.query`SELECT m.id, u.nome AS usuario_nome, s.nome AS servico_nome, b.nome AS barbeiro_nome, m.barbeiro_id, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id LEFT JOIN barbeiros b ON m.barbeiro_id = b.id ORDER BY m.data ASC, m.hora ASC`;
+      await sql.query`SELECT m.id, m.user_id, u.nome AS usuario_nome, s.nome AS servico_nome, b.nome AS barbeiro_nome, m.barbeiro_id, CONVERT(VARCHAR(10), m.data, 103) AS data_formatada, CONVERT(VARCHAR(5), m.hora, 108) AS hora_formatada FROM utilizadores u INNER JOIN marcacoes m ON u.id = m.user_id INNER JOIN servicos s ON m.servico_id = s.id LEFT JOIN barbeiros b ON m.barbeiro_id = b.id ORDER BY m.data ASC, m.hora ASC`;
 
     res.status(200).json(appointments);
   } catch (err) {
@@ -388,6 +388,42 @@ app.get("/barbeiros", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/users", authMiddleware, roleMiddleware, async (req, res) => {
+  try {
+    const { recordset: users } =
+      await sql.query`SELECT id, nome, email, telefone, datanascimento, genero, role, fotografia, documento FROM utilizadores ORDER BY nome ASC`;
+
+    res.status(200).json(users);
+  } catch (err) {
+    console.error("Erro ao retornar utilizadores:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.delete("/users/:id", authMiddleware, roleMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id.trim()) {
+      return res
+        .status(400)
+        .json({ message: "O id do usuário não foi providenciado" });
+    }
+
+    const { rowsAffected } =
+      await sql.query`DELETE FROM utilizadores WHERE id = ${id}`;
+
+    if (rowsAffected[0] == 0) {
+      return res.status(400).json({ message: "Erro ao excluir usuário" });
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).json({ message: "Internal server errror" });
+  }
+});
+
 app.post("/barbeiro", authMiddleware, roleMiddleware, async (req, res) => {
   try {
     const { nome } = req.body;
@@ -445,7 +481,7 @@ app.delete(
       console.error("Erro ao deletar barbeiro:", err);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 );
 
 connecttoDB()
