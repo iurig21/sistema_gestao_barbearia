@@ -33,8 +33,8 @@ CREATE TABLE servicos (
 CREATE TABLE marcacoes (
 	id INT PRIMARY KEY identity(1,1),
 	user_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
-	servico_id INT REFERENCES servicos(id),
-	barbeiro_id INT REFERENCES barbeiros(id),
+	servico_id INT REFERENCES servicos(id) ON DELETE CASCADE,
+	barbeiro_id INT REFERENCES barbeiros(id) ON DELETE CASCADE,
 	data DATE NOT NULL,
 	hora TIME NOT NULL
 )
