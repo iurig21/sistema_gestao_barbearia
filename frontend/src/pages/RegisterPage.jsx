@@ -202,6 +202,20 @@ function RegisterPage() {
           <div className="form-row">
             <div className="input-group">
               <label>Fotografia {fotografia && "✓"}</label>
+              {fotografia && !uploadingFoto && (
+                <img
+                  src={`http://localhost:3000/uploads/${fotografia}`}
+                  alt="Preview fotografia"
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    objectFit: "cover",
+                    borderRadius: "6px",
+                    border: "1px solid #2a2a2a",
+                    marginBottom: "8px",
+                  }}
+                />
+              )}
               <input
                 key={`foto-${fileInputKey}`}
                 type="file"
@@ -216,13 +230,51 @@ function RegisterPage() {
               />
               {uploadingFoto && (
                 <span style={{ color: "#C8A870", fontSize: "11px" }}>
-                  Uploading...
+                  A carregar...
                 </span>
               )}
             </div>
 
             <div className="input-group">
               <label>Documento de identificação {documento && "✓"}</label>
+              {documento &&
+                !uploadingDoc &&
+                (documento.endsWith(".pdf") ? (
+                  <div
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      overflow: "hidden",
+                      borderRadius: "6px",
+                      border: "1px solid #2a2a2a",
+                      background: "#0f0f0f",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <iframe
+                      src={`http://localhost:3000/uploads/${documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                      width="100"
+                      height="100"
+                      style={{
+                        border: "none",
+                      }}
+                      title="Preview documento"
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={`http://localhost:3000/uploads/${documento}`}
+                    alt="Preview documento"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "6px",
+                      border: "1px solid #2a2a2a",
+                      marginBottom: "8px",
+                    }}
+                  />
+                ))}
               <input
                 key={`doc-${fileInputKey}`}
                 type="file"
@@ -237,7 +289,7 @@ function RegisterPage() {
               />
               {uploadingDoc && (
                 <span style={{ color: "#C8A870", fontSize: "11px" }}>
-                  Uploading...
+                  A carregar...
                 </span>
               )}
             </div>

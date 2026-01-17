@@ -39,13 +39,13 @@ Sistema completo de gestão para barbearias com agendamento de serviços, contro
 - **PUT** `/services/:id` - Atualiza um serviço existente (apenas admin)
 - **DELETE** `/services/:id` - Deleta um serviço (apenas admin)
 
-### Agendamentos (Marcações)
+### Marcações
 
-- **GET** `/appointments` - Lista os agendamentos do usuário logado
-- **GET** `/appointments/all` - Lista todos os agendamentos do sistema (apenas admin)
+- **GET** `/appointments` - Lista as marcações do usuário logado
+- **GET** `/appointments/all` - Lista todos as marcações do sistema (apenas admin)
 - **GET** `/appointments/booked/:date` - Retorna os horários ocupados em uma data específica
-- **POST** `/appointments` - Cria um novo agendamento
-- **DELETE** `/appointments/:id` - Cancela um agendamento
+- **POST** `/appointments` - Cria uma nova marcação
+- **DELETE** `/appointments/:id` - Cancela uma marcação
 
 ### Barbeiros
 

@@ -353,9 +353,13 @@ function AdminPage() {
         </button>
       </div>
 
+      <div className="admin-header">
+        <h2>Marcações</h2>
+      </div>
+
       {error && <div className="error-message">{error}</div>}
       {success && (
-        <div className="success-message"> Marcação excluída com sucesso! </div>
+        <div className="success-message"> Marcação cancelada com sucesso! </div>
       )}
 
       <div className="filter-section">
@@ -409,10 +413,6 @@ function AdminPage() {
             Limpar Filtros
           </button>
         )}
-      </div>
-
-      <div className="admin-header">
-        <h2>Marcações</h2>
       </div>
 
       {isLoading ? (
@@ -489,7 +489,6 @@ function AdminPage() {
                 <th>Telemóvel</th>
                 <th>Data Nascimento</th>
                 <th>Género</th>
-                <th>Role</th>
                 <th>Fotografia</th>
                 <th>Documento ID</th>
                 <th>Ações</th>
@@ -509,7 +508,6 @@ function AdminPage() {
                       : "N/A"}
                   </td>
                   <td>{user.genero || "N/A"}</td>
-                  <td className="barbeiro-cell">{user.role}</td>
                   <td className="image-cell">
                     {user.fotografia ? (
                       <img
