@@ -1,5 +1,5 @@
 // YYYY-MM-DD
-export const  isDateValid = (dateStr) => {
+export const isDateValid = (dateStr) => {
     return !isNaN(new Date(dateStr));
 }
 
