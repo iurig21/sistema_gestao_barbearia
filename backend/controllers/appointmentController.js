@@ -52,6 +52,13 @@ const appointmentController = {
   createAppointment: async (req, res) => {
     try {
       const { id: userID } = req.user;
+
+      if (!req.user.email_verificado) {
+        return res.status(403).json({
+          message: "É necessário verificar o seu email antes de fazer uma marcação.",
+        });
+      }
+
       const { servicoID, data, hora, barbeiroID } = req.body;
 
       if (!data.trim() || !hora.trim() || !barbeiroID) {
@@ -109,12 +116,16 @@ const appointmentController = {
           const serviceName = req.body.servicoNome || "Barbearia";
           const barbeiroName = req.body.barbeiroNome || "Barbeiro";
 
-          await GoogleCalendarService.createCalendarEvent(userID, {
+          const calendarEvent = await GoogleCalendarService.createCalendarEvent(userID, {
             summary: `Barbearia - ${serviceName}`,
             description: `Serviço: ${serviceName}\nBarbeiro: ${barbeiroName}`,
             date: data,
             time: hora,
           });
+
+          if (calendarEvent?.id) {
+            await AppointmentService.saveGoogleEventId(appointment.id, calendarEvent.id);
+          }
         }
       } catch (calendarErr) {
         console.error("Google Calendar event creation failed (non-blocking):", calendarErr.message);
@@ -133,6 +144,19 @@ const appointmentController = {
 
       if (!id.trim()) {
         return res.status(400).json({ message: "AppointmentID not provided" });
+      }
+
+      const appointment = await AppointmentService.getAppointmentById(id);
+
+      if (appointment?.google_event_id) {
+        try {
+          await GoogleCalendarService.deleteCalendarEvent(
+            appointment.user_id,
+            appointment.google_event_id,
+          );
+        } catch (calendarErr) {
+          console.error("Google Calendar event deletion failed (non-blocking):", calendarErr.message);
+        }
       }
 
       const deleted = await AppointmentService.deleteAppointment(id);

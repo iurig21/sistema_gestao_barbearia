@@ -121,6 +121,31 @@ const GoogleCalendarService = {
       return null;
     }
   },
+
+  deleteCalendarEvent: async (userId, eventId) => {
+    if (!eventId) return false;
+
+    const tokens = await GoogleCalendarService.getTokens(userId);
+    if (!tokens) return false;
+
+    oauth2Client.setCredentials(tokens);
+
+    const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+
+    try {
+      await calendar.events.delete({
+        calendarId: "primary",
+        eventId,
+      });
+      return true;
+    } catch (err) {
+      console.error("Error deleting Google Calendar event:", err.message);
+      if (err.code === 401) {
+        await GoogleCalendarService.removeTokens(userId);
+      }
+      return false;
+    }
+  },
 };
 
 export default GoogleCalendarService;

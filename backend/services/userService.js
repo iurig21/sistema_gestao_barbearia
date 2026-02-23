@@ -58,6 +58,31 @@ const UserService = {
     }
   },
 
+  setEmailToken: async (userId, token) => {
+    try {
+      await sql.query`UPDATE utilizadores SET email_token = ${token} WHERE id = ${userId}`;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  getUserByEmailToken: async (token) => {
+    try {
+      const result = await sql.query`SELECT * FROM utilizadores WHERE email_token = ${token}`;
+      return result.recordset[0] ?? null;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  verifyUserEmail: async (userId) => {
+    try {
+      await sql.query`UPDATE utilizadores SET email_verificado = 1, email_token = NULL WHERE id = ${userId}`;
+    } catch (err) {
+      throw err;
+    }
+  },
+
   updateUser: async ({ userId, newPassword, newTelefone, newMorada, newPhoto, newDoc }) => {
     try {
       const setClauses = [];

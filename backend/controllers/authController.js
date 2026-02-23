@@ -1,5 +1,7 @@
+import crypto from "crypto";
 import UserService from "../services/userService.js";
 import AuthService from "../services/authService.js";
+import EmailService from "../services/emailService.js";
 
 const authController = {
   login: async (req, res) => {
@@ -95,11 +97,41 @@ const authController = {
         return res.status(400).json({ message: "Erro ao registar usuário" });
       }
 
+      const token = crypto.randomBytes(32).toString("hex");
+      await UserService.setEmailToken(newUser.id, token);
+
+      EmailService.sendVerificationEmail(email, token).catch((err) =>
+        console.error("Erro ao enviar email de verificação:", err)
+      );
+
       res
         .status(201)
-        .json({ message: "Usuário criado com sucesso", success: true });
+        .json({ message: "Usuário criado com sucesso. Verifique o seu email.", success: true });
     } catch (err) {
       console.error("Error signing up:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  verifyEmail: async (req, res) => {
+    try {
+      const { token } = req.query;
+
+      if (!token) {
+        return res.status(400).json({ message: "Token não fornecido" });
+      }
+
+      const user = await UserService.getUserByEmailToken(token);
+
+      if (!user) {
+        return res.status(400).json({ message: "Token inválido ou expirado" });
+      }
+
+      await UserService.verifyUserEmail(user.id);
+
+      res.status(200).json({ message: "Email verificado com sucesso" });
+    } catch (err) {
+      console.error("Erro ao verificar email:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   },

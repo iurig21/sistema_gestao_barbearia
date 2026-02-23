@@ -57,6 +57,24 @@ const AppointmentService = {
     }
   },
 
+  getAppointmentById: async (id) => {
+    try {
+      const { recordset } =
+        await sql.query`SELECT * FROM marcacoes WHERE id = ${id}`;
+      return recordset[0] ?? null;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  saveGoogleEventId: async (appointmentId, googleEventId) => {
+    try {
+      await sql.query`UPDATE marcacoes SET google_event_id = ${googleEventId} WHERE id = ${appointmentId}`;
+    } catch (err) {
+      throw err;
+    }
+  },
+
   deleteAppointment: async (id) => {
     try {
       const { rowsAffected } =

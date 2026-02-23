@@ -2,9 +2,15 @@ import "./styles.css";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/registerPage.jsx";
 import Services from "./pages/Services.jsx";
-import AdminPage from "./pages/adminPage.jsx";
+import AdminLayout from "./pages/AdminLayout.jsx";
+import AdminMarcacoes from "./pages/AdminMarcacoes.jsx";
+import AdminUtilizadores from "./pages/AdminUtilizadores.jsx";
+import AdminServicos from "./pages/AdminServicos.jsx";
+import AdminBarbeiros from "./pages/AdminBarbeiros.jsx";
 import Profile from "./pages/Profile.jsx";
 import Marcacoes from "./pages/Marcacoes.jsx";
+import VerificarEmail from "./pages/VerificarEmail.jsx";
+import ConfirmarEmail from "./pages/ConfirmarEmail.jsx";
 import { Routes, Route, Navigate } from "react-router";
 import { AuthContext } from "./contexts/authContext";
 import { useContext } from "react";
@@ -91,16 +97,25 @@ function App() {
             )
           }
         />
+        <Route path="/confirmar-email" element={<ConfirmarEmail />} />
+        <Route path="/verificar-email" element={<VerificarEmail />} />
+
         <Route
           path="/admin"
           element={
             isAuthenticated && authUser.role === "admin" ? (
-              <AdminPage />
+              <AdminLayout />
             ) : (
               <Navigate to="/login" replace />
             )
           }
-        />
+        >
+          <Route index element={<Navigate to="marcacoes" replace />} />
+          <Route path="marcacoes" element={<AdminMarcacoes />} />
+          <Route path="utilizadores" element={<AdminUtilizadores />} />
+          <Route path="servicos" element={<AdminServicos />} />
+          <Route path="barbeiros" element={<AdminBarbeiros />} />
+        </Route>
       </Routes>
     </div>
   );

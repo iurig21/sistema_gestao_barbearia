@@ -1,15 +1,16 @@
 import Navbar from "../components/Navbar.jsx";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, AlertTriangle } from "lucide-react";
 import AppointmentsForm from "../components/AppointmentsForm.jsx";
 import Appointments from "../components/Appointments.jsx";
 import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { Link } from "react-router";
 
 function Marcacoes() {
   const [isOpen, setIsOpen] = useState(false);
   const [success, setSuccess] = useState(false);
   const [marcacoes, setMarcacoes] = useState([]);
-  const { token } = useContext(AuthContext);
+  const { token, authUser } = useContext(AuthContext);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -78,32 +79,47 @@ function Marcacoes() {
       <div className="marcacoes-container">
         <div className="marcacoes-header">
           <h1>As Minhas Marcações</h1>
-          <button
-            className="btn-new-appointment"
-            onClick={() => setIsOpen(true)}
-          >
-            <CirclePlus size={20} /> Nova marcação
-          </button>
+          {authUser.email_verificado && (
+            <button
+              className="btn-new-appointment"
+              onClick={() => setIsOpen(true)}
+            >
+              <CirclePlus size={20} /> Nova marcação
+            </button>
+          )}
         </div>
 
-        {success && (
-          <p className="success-message">Operação realizada com sucesso!</p>
-        )}
+        {!authUser.email_verificado ? (
+          <div className="empty-state">
+            <AlertTriangle size={48} color="#e74c3c" />
+            <p>Email não verificado</p>
+            <span>
+              Deve verificar o seu email antes de poder fazer marcações.
+              Verifique a sua caixa de correio.
+            </span>
+          </div>
+        ) : (
+          <>
+            {success && (
+              <p className="success-message">Operação realizada com sucesso!</p>
+            )}
 
-        {isOpen && (
-          <AppointmentsForm
-            isOpen={isOpen}
-            onClose={() => setIsOpen(false)}
-            onSuccess={handleSuccess}
-          />
-        )}
+            {isOpen && (
+              <AppointmentsForm
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                onSuccess={handleSuccess}
+              />
+            )}
 
-        <Appointments
-          marcacoes={marcacoes}
-          isLoading={isLoading}
-          error={error}
-          onDelete={handleDelete}
-        />
+            <Appointments
+              marcacoes={marcacoes}
+              isLoading={isLoading}
+              error={error}
+              onDelete={handleDelete}
+            />
+          </>
+        )}
       </div>
     </>
   );

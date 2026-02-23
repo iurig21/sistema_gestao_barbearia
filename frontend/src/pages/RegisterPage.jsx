@@ -97,12 +97,7 @@ function RegisterPage() {
       });
 
       clearForm();
-
-      setSuccess("Registado com sucesso!");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1000);
+      navigate("/confirmar-email");
     } catch (err) {
       setError(err.message);
     }
