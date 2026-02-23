@@ -1,4 +1,5 @@
 import AppointmentService from "../services/appointmentService.js";
+import GoogleCalendarService from "../services/googleCalendarService.js";
 import { isDateValid, isValidTime } from "../utils/index.js";
 
 const appointmentController = {
@@ -100,6 +101,23 @@ const appointmentController = {
 
       if (!appointment) {
         return res.status(400).json({ message: "Erro ao criar marcação" });
+      }
+
+      try {
+        const tokens = await GoogleCalendarService.getTokens(userID);
+        if (tokens) {
+          const serviceName = req.body.servicoNome || "Barbearia";
+          const barbeiroName = req.body.barbeiroNome || "Barbeiro";
+
+          await GoogleCalendarService.createCalendarEvent(userID, {
+            summary: `Barbearia - ${serviceName}`,
+            description: `Serviço: ${serviceName}\nBarbeiro: ${barbeiroName}`,
+            date: data,
+            time: hora,
+          });
+        }
+      } catch (calendarErr) {
+        console.error("Google Calendar event creation failed (non-blocking):", calendarErr.message);
       }
 
       res.status(201).json(appointment);

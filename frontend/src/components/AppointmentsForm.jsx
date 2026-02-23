@@ -116,7 +116,11 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          servicoNome: services.find((s) => String(s.id) === String(formData.servicoID))?.nome || "",
+          barbeiroNome: barbeiros.find((b) => String(b.id) === String(formData.barbeiroID))?.nome || "",
+        }),
       });
 
       const data = await response.json();

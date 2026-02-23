@@ -12,5 +12,6 @@ router.delete(
   roleMiddleware,
   userController.deleteUser,
 );
+router.put("/users/:id",authMiddleware,userController.updateUser);
 
 export default router;

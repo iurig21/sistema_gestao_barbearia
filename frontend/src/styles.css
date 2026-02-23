@@ -514,6 +514,136 @@ body {
   text-align: center;
 }
 
+.profile-right-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.profile-right-header h3 {
+  margin-bottom: 0;
+}
+
+.btn-edit-profile {
+  background: transparent;
+  color: #c8a870;
+  border: 1px solid #c8a870;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.btn-edit-profile:hover {
+  background: #c8a870;
+  color: #0f0f0f;
+}
+
+.profile-edit-input {
+  width: 100%;
+  background: #0f0f0f;
+  border: 2px solid #2a2a2a;
+  padding: 12px;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.profile-edit-input:focus {
+  outline: none;
+  border-color: #c8a870;
+  background: #1a1a1a;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .profile-edit-input {
+  padding-right: 40px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  color: #c8a870;
+}
+
+.profile-file-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.profile-file-group label {
+  color: #c8a870;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.profile-file-group input[type="file"] {
+  background: #0f0f0f;
+  border: 2px solid #2a2a2a;
+  padding: 8px 10px;
+  border-radius: 4px;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.profile-file-group input[type="file"]::file-selector-button {
+  background: #c8a870;
+  color: #0f0f0f;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+.profile-file-group input[type="file"]::file-selector-button:hover {
+  background: #d4b57e;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #2a2a2a;
+}
+
 @media (max-width: 768px) {
   .profile-card {
     flex-direction: column;
@@ -529,6 +659,21 @@ body {
 
   .profile-info {
     grid-template-columns: 1fr;
+  }
+
+  .profile-right-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .profile-actions {
+    flex-direction: column;
+  }
+
+  .profile-actions .btn-cancel,
+  .profile-actions .btn-submit {
+    width: 100%;
   }
 }
 
@@ -1700,4 +1845,68 @@ body {
   .btn-secondary {
     width: 100%;
   }
+}
+
+/* Google Calendar Section */
+.google-calendar-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.google-calendar-section h4 {
+  font-size: 16px;
+  color: #c8a870;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-calendar-description {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.btn-google-connect {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-google-connect:hover {
+  background: #3367d6;
+}
+
+.btn-google-connect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-google-disconnect {
+  padding: 10px 20px;
+  background: transparent;
+  color: #e57373;
+  border: 1px solid #e57373;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-google-disconnect:hover {
+  background: #e57373;
+  color: white;
 }

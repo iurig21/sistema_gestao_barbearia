@@ -57,6 +57,44 @@ const UserService = {
       throw err;
     }
   },
+
+  updateUser: async ({ userId, newPassword, newTelefone, newMorada, newPhoto, newDoc }) => {
+    try {
+      const setClauses = [];
+      const request = new sql.Request();
+
+      if (newPassword) {
+        setClauses.push("password = @newPassword");
+        request.input("newPassword", sql.NVarChar, newPassword);
+      }
+      if (newTelefone) {
+        setClauses.push("telefone = @newTelefone");
+        request.input("newTelefone", sql.NVarChar, newTelefone);
+      }
+      if (newMorada) {
+        setClauses.push("morada = @newMorada");
+        request.input("newMorada", sql.NVarChar, newMorada);
+      }
+      if (newPhoto) {
+        setClauses.push("fotografia = @newPhoto");
+        request.input("newPhoto", sql.NVarChar, newPhoto);
+      }
+      if (newDoc) {
+        setClauses.push("documento = @newDoc");
+        request.input("newDoc", sql.NVarChar, newDoc);
+      }
+
+      if (setClauses.length === 0) return false;
+
+      request.input("userId", sql.Int, userId);
+      const query = `UPDATE utilizadores SET ${setClauses.join(", ")} WHERE id = @userId`;
+      const result = await request.query(query);
+
+      return result.rowsAffected[0] > 0;
+    } catch (err) {
+      throw err;
+    }
+  }
 };
 
 export default UserService;
