@@ -1,6 +1,7 @@
 import AppointmentService from "../services/appointmentService.js";
 import GoogleCalendarService from "../services/googleCalendarService.js";
 import { isDateValid, isValidTime } from "../utils/index.js";
+import MessageService from "../services/messageService.js";
 
 const appointmentController = {
   getAppointments: async (req, res) => {
@@ -130,6 +131,9 @@ const appointmentController = {
       } catch (calendarErr) {
         console.error("Google Calendar event creation failed (non-blocking):", calendarErr.message);
       }
+
+      MessageService.sendMessageRemainder(req.user.telefone, data, hora)
+        .catch((err) => console.error("Error sending reminder message:", err));
 
       res.status(201).json(appointment);
     } catch (err) {
