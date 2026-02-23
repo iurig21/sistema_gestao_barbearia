@@ -10,7 +10,8 @@ import AdminBarbeiros from "./pages/AdminBarbeiros.jsx";
 import Profile from "./pages/Profile.jsx";
 import Marcacoes from "./pages/Marcacoes.jsx";
 import VerificarEmail from "./pages/VerificarEmail.jsx";
-import ConfirmarEmail from "./pages/ConfirmarEmail.jsx";
+import VerificarTelefone from "./pages/VerificarTelefone.jsx";
+import ConfirmarRegisto from "./pages/ConfirmarRegisto.jsx";
 import { Routes, Route, Navigate } from "react-router";
 import { AuthContext } from "./contexts/authContext";
 import { useContext } from "react";
@@ -97,8 +98,9 @@ function App() {
             )
           }
         />
-        <Route path="/confirmar-email" element={<ConfirmarEmail />} />
+        <Route path="/confirmar-registo" element={<ConfirmarRegisto />} />
         <Route path="/verificar-email" element={<VerificarEmail />} />
+        <Route path="/verificar-telefone" element={<VerificarTelefone />} />
 
         <Route
           path="/admin"

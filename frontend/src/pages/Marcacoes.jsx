@@ -79,7 +79,7 @@ function Marcacoes() {
       <div className="marcacoes-container">
         <div className="marcacoes-header">
           <h1>As Minhas Marcações</h1>
-          {authUser.email_verificado && (
+          {authUser.email_verificado && authUser.telefone_verificado && (
             <button
               className="btn-new-appointment"
               onClick={() => setIsOpen(true)}
@@ -89,13 +89,16 @@ function Marcacoes() {
           )}
         </div>
 
-        {!authUser.email_verificado ? (
+        {!authUser.email_verificado || !authUser.telefone_verificado ? (
           <div className="empty-state">
             <AlertTriangle size={48} color="#e74c3c" />
-            <p>Email não verificado</p>
+            <p>Conta não verificada</p>
             <span>
-              Deve verificar o seu email antes de poder fazer marcações.
-              Verifique a sua caixa de correio.
+              {!authUser.email_verificado && !authUser.telefone_verificado
+                ? "Deve verificar o seu email e telefone antes de poder fazer marcações."
+                : !authUser.email_verificado
+                  ? "Deve verificar o seu email antes de poder fazer marcações."
+                  : "Deve verificar o seu telefone antes de poder fazer marcações."}
             </span>
           </div>
         ) : (

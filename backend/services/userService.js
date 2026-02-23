@@ -1,6 +1,15 @@
 import sql from "mssql";
 
 const UserService = {
+  getUserById: async (id) => {
+    try {
+      const result = await sql.query`SELECT * FROM utilizadores WHERE id = ${id}`;
+      return result.recordset[0] ?? null;
+    } catch (err) {
+      throw err;
+    }
+  },
+
   getUserByEmail: async (email) => {
     try {
       const result =
@@ -78,6 +87,31 @@ const UserService = {
   verifyUserEmail: async (userId) => {
     try {
       await sql.query`UPDATE utilizadores SET email_verificado = 1, email_token = NULL WHERE id = ${userId}`;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  setPhoneCode: async (userId, code) => {
+    try {
+      await sql.query`UPDATE utilizadores SET telefone_code = ${code} WHERE id = ${userId}`;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  getUserByPhoneCode: async (userId, code) => {
+    try {
+      const result = await sql.query`SELECT * FROM utilizadores WHERE id = ${userId} AND telefone_code = ${code}`;
+      return result.recordset[0] ?? null;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  verifyUserPhone: async (userId) => {
+    try {
+      await sql.query`UPDATE utilizadores SET telefone_verificado = 1, telefone_code = NULL WHERE id = ${userId}`;
     } catch (err) {
       throw err;
     }

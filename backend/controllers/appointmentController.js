@@ -53,9 +53,9 @@ const appointmentController = {
     try {
       const { id: userID } = req.user;
 
-      if (!req.user.email_verificado) {
+      if (!req.user.email_verificado || !req.user.telefone_verificado) {
         return res.status(403).json({
-          message: "É necessário verificar o seu email antes de fazer uma marcação.",
+          message: "É necessário verificar o seu email e telefone antes de fazer uma marcação.",
         });
       }
 

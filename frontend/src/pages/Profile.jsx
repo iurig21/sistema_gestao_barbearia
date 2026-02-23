@@ -278,6 +278,15 @@ function Profile() {
                       maxLength={9}
                     />
                   )}
+                  {authUser.telefone_verificado ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#4CAF50", fontSize: "13px", marginTop: "4px" }}>
+                      <CheckCircle size={14} /> Verificado
+                    </span>
+                  ) : (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#e74c3c", fontSize: "13px", marginTop: "4px" }}>
+                      <AlertTriangle size={14} /> Telefone não verificado
+                    </span>
+                  )}
                 </div>
 
                 <div className="info-group">

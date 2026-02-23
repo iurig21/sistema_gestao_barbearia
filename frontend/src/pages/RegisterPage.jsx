@@ -84,7 +84,7 @@ function RegisterPage() {
     }
 
     try {
-      await Register({
+      const result = await Register({
         nome,
         datanascimento,
         morada,
@@ -97,7 +97,7 @@ function RegisterPage() {
       });
 
       clearForm();
-      navigate("/confirmar-email");
+      navigate("/confirmar-registo", { state: { userId: result.userId } });
     } catch (err) {
       setError(err.message);
     }

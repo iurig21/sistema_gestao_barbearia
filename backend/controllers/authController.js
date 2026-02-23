@@ -2,6 +2,8 @@ import crypto from "crypto";
 import UserService from "../services/userService.js";
 import AuthService from "../services/authService.js";
 import EmailService from "../services/emailService.js";
+import MessageService from "../services/messageService.js";
+import validator from "validator";
 
 const authController = {
   login: async (req, res) => {
@@ -67,6 +69,16 @@ const authController = {
           .json({ message: "Todos os inputs são obrigatórios" });
       }
 
+      if(!validator.isEmail(email)){
+        return res.status(400).json({message: "Email inválido"})
+      }
+
+      const isValidPhone = (phone) => /^9\d{8}$/.test(phone);
+
+      if(!isValidPhone(telefone)){
+        return res.status(400).json({message: "Telefone inválido"})
+      }
+
       if (password.length < 6) {
         return res
           .status(400)
@@ -104,9 +116,16 @@ const authController = {
         console.error("Erro ao enviar email de verificação:", err)
       );
 
+      const phoneCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await UserService.setPhoneCode(newUser.id, phoneCode);
+
+      MessageService.sendWhatsAppCode(telefone, phoneCode).catch((err) =>
+        console.error("Erro ao enviar código WhatsApp:", err)
+      );
+
       res
         .status(201)
-        .json({ message: "Usuário criado com sucesso. Verifique o seu email.", success: true });
+        .json({ message: "Usuário criado com sucesso. Verifique o seu email e WhatsApp.", success: true, userId: newUser.id });
     } catch (err) {
       console.error("Error signing up:", err);
       res.status(500).json({ message: "Internal server error" });
@@ -132,6 +151,59 @@ const authController = {
       res.status(200).json({ message: "Email verificado com sucesso" });
     } catch (err) {
       console.error("Erro ao verificar email:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  verifyPhone: async (req, res) => {
+    try {
+      const { userId, code } = req.body;
+
+      if (!userId || !code) {
+        return res.status(400).json({ message: "Código e ID são obrigatórios" });
+      }
+
+      const user = await UserService.getUserByPhoneCode(userId, code);
+
+      if (!user) {
+        return res.status(400).json({ message: "Código inválido" });
+      }
+
+      await UserService.verifyUserPhone(user.id);
+
+      res.status(200).json({ message: "Telefone verificado com sucesso" });
+    } catch (err) {
+      console.error("Erro ao verificar telefone:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  resendPhoneCode: async (req, res) => {
+    try {
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ message: "ID do utilizador é obrigatório" });
+      }
+
+      const user = await UserService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "Utilizador não encontrado" });
+      }
+
+      if (user.telefone_verificado) {
+        return res.status(400).json({ message: "Telefone já verificado" });
+      }
+
+      const phoneCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await UserService.setPhoneCode(user.id, phoneCode);
+
+      await MessageService.sendWhatsAppCode(user.telefone, phoneCode);
+
+      res.status(200).json({ message: "Código reenviado com sucesso" });
+    } catch (err) {
+      console.error("Erro ao reenviar código:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   },

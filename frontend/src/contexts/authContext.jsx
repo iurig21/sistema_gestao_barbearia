@@ -95,12 +95,13 @@ function AuthProvider({ children }) {
         body: JSON.stringify(userData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Registration failed");
+        throw new Error(data.message || "Registration failed");
       }
 
-      return true;
+      return data;
     } catch (err) {
       console.error(err);
       throw err;
