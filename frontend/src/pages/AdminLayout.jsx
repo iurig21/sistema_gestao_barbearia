@@ -1,10 +1,12 @@
 import { Outlet, NavLink } from "react-router";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
-import { Calendar, User, Scissors, LogOut } from "lucide-react";
+import { ThemeContext } from "../contexts/themeContext.jsx";
+import { Calendar, User, Scissors, LogOut, Sun, Moon } from "lucide-react";
 
 function AdminLayout() {
   const { Logout } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   return (
     <div className="admin-layout">
@@ -30,6 +32,10 @@ function AdminLayout() {
             <span>Barbeiros</span>
           </NavLink>
         </nav>
+        <button className="sidebar-theme-toggle" onClick={toggleTheme}>
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          <span>{theme === "dark" ? "Modo Claro" : "Modo Escuro"}</span>
+        </button>
         <button className="sidebar-logout" onClick={Logout}>
           <LogOut size={18} />
           <span>Logout</span>

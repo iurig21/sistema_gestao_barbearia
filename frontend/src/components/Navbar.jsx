@@ -1,13 +1,13 @@
 import { Link, useLocation } from "react-router";
-import { User, Calendar, Scissors, LogOut } from "lucide-react";
+import { User, Calendar, Scissors, LogOut, Sun, Moon } from "lucide-react";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/authContext";
+import { ThemeContext } from "../contexts/themeContext";
 
 function Navbar() {
   const location = useLocation();
   const { Logout } = useContext(AuthContext);
-
-
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const isActive = (path) => location.pathname === path;
 
@@ -43,6 +43,10 @@ function Navbar() {
             <User size={20} />
             <span>Perfil</span>
           </Link>
+
+          <button onClick={toggleTheme} className="theme-toggle" title={theme === "dark" ? "Modo claro" : "Modo escuro"}>
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
           <button onClick={Logout} className="navbar-link navbar-logout">
             <LogOut size={20} />
