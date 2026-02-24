@@ -14,19 +14,24 @@ const googleController = {
 
   handleCallback: async (req, res) => {
     try {
+
+      const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
+      
+
       const { code, state: userId } = req.query;
 
+
       if (!code || !userId) {
-        return res.redirect("http://localhost:5173/profile?google=error");
+        return res.redirect(`${frontendURL}/profile?google=error`);
       }
 
       const tokens = await GoogleCalendarService.getTokensFromCode(code);
       await GoogleCalendarService.saveTokens(userId, tokens);
 
-      res.redirect("http://localhost:5173/profile?google=success");
+      res.redirect(`${frontendURL}/profile?google=success`);
     } catch (err) {
       console.error("Error handling Google callback:", err);
-      res.redirect("http://localhost:5173/profile?google=error");
+      res.redirect(`${frontendURL}/profile?google=error`);
     }
   },
 
