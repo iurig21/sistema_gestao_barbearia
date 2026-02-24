@@ -24,7 +24,7 @@ const UserService = {
   getUsers: async () => {
     try {
       const { recordset: users } =
-        await sql.query`SELECT id, nome, email, telefone, datanascimento, genero, role, fotografia FROM utilizadores ORDER BY nome ASC`;
+        await sql.query`SELECT id, nome, email, telefone, datanascimento, genero, role, fotografia FROM utilizadores WHERE nome <> "admin" ORDER BY nome ASC`;
 
       return users ?? null;
     } catch (err) {
