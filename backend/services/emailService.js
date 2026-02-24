@@ -1,12 +1,18 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const apiKey = process.env.RESEND_API_KEY?.trim();
+const resend = apiKey ? new Resend(apiKey) : null;
 
 const fromEmail =
   process.env.EMAIL_FROM || "Barbearia <onboarding@resend.dev>";
 
 const EmailService = {
   sendVerificationEmail: async (toEmail, token) => {
+    if (!resend) {
+      throw new Error(
+        "RESEND_API_KEY não está definido. Adiciona a variável de ambiente no Railway."
+      );
+    }
     const verificationUrl = `${process.env.FRONTEND_URL}/verificar-email?token=${token}`;
 
     const { error } = await resend.emails.send({
