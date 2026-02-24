@@ -1,6 +1,6 @@
-# SQL Server 2019 - Railway Deployment
+# SQL Server 2017 - Railway Deployment
 
-Dockerfile para fazer deploy do SQL Server 2019 no Railway. Usa a imagem 2019 em vez da 2022 para evitar problemas de permissões com volumes.
+Dockerfile para fazer deploy do SQL Server 2017 no Railway. Usa a imagem 2017 (que corre como root) para evitar problemas de permissões com volumes montados.
 
 ## Deploy no Railway
 
@@ -26,3 +26,7 @@ No serviço do backend, configura:
 - `DB_DATABASE` = `trabalhopratico`
 
 Cria a base de dados `trabalhopratico` no SQL Server depois do primeiro deploy.
+
+## Se continuar a crashar
+
+Remove o volume atual (Settings → Volumes) e adiciona um novo. Volumes de tentativas anteriores podem ter permissões incorretas.

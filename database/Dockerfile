@@ -1,5 +1,6 @@
-# SQL Server 2019 - runs as root by default, avoids permission issues on Railway volumes
-FROM mcr.microsoft.com/mssql/server:2019-latest
+# SQL Server 2017 - runs as root by default, avoids permission issues on Railway volumes
+# (2019+ run as mssql user and fail with "Permission denied" on mounted volumes)
+FROM mcr.microsoft.com/mssql/server:2017-latest
 
 EXPOSE 1433
 
