@@ -64,6 +64,7 @@ function VerificarTelefone() {
 
       if (response.ok) {
         setStatus("success");
+        sessionStorage.removeItem("pendingVerifyUserId");
       } else {
         const data = await response.json();
         setError(data.message || "Código inválido");

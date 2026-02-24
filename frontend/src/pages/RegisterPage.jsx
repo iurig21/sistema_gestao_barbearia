@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "../styles.css";
-import { API_URL } from "../config";
+import { API_URL, getFileUrl } from "../config";
 import { Link } from "react-router";
 import { Loader } from "lucide-react";
 import { AuthContext } from "../contexts/authContext.jsx";
@@ -16,10 +16,8 @@ function RegisterPage() {
   const [telefone, setTelefone] = useState("");
   const [genero, setGenero] = useState("");
   const [fotografia, setFotografia] = useState("");
-  const [documento, setDocumento] = useState("");
   const [password, setPassword] = useState("");
   const [uploadingFoto, setUploadingFoto] = useState(false);
-  const [uploadingDoc, setUploadingDoc] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [fileInputKey, setFileInputKey] = useState(Date.now());
@@ -46,7 +44,7 @@ function RegisterPage() {
       }
 
       const data = await response.json();
-      setFileName(data.filename);
+      setFileName(data.url);
     } catch (err) {
       setError(err.message);
       console.error("Upload error:", err);
@@ -63,7 +61,6 @@ function RegisterPage() {
 
     if (
       !fotografia ||
-      !documento ||
       !nome.trim() ||
       !datanascimento.trim() ||
       !password.trim() ||
@@ -72,7 +69,13 @@ function RegisterPage() {
       !telefone.trim() ||
       !genero.trim()
     ) {
-      setError("Todos os campos são obrigatórios");
+      if (!fotografia) {
+        setError(
+          "A fotografia deve ser carregada com sucesso (deve aparecer ✓). Aguarde o carregamento ou tente novamente."
+        );
+      } else {
+        setError("Todos os campos são obrigatórios");
+      }
       return;
     }
 
@@ -93,11 +96,11 @@ function RegisterPage() {
         telefone,
         genero,
         fotografia,
-        documento,
         password,
       });
 
       clearForm();
+      sessionStorage.setItem("pendingVerifyUserId", String(result.userId));
       navigate("/confirmar-registo", { state: { userId: result.userId } });
     } catch (err) {
       setError(err.message);
@@ -112,7 +115,6 @@ function RegisterPage() {
     setTelefone("");
     setGenero("");
     setFotografia("");
-    setDocumento("");
     setPassword("");
     setError("");
     setSuccess("");
@@ -200,7 +202,7 @@ function RegisterPage() {
               <label>Fotografia {fotografia && "✓"}</label>
               {fotografia && !uploadingFoto && (
                 <img
-                  src={`${API_URL}/uploads/${fotografia}`}
+                  src={getFileUrl(fotografia)}
                   alt="Preview fotografia"
                   style={{
                     width: "100px",
@@ -231,64 +233,6 @@ function RegisterPage() {
               )}
             </div>
 
-            <div className="input-group">
-              <label>Documento de identificação {documento && "✓"}</label>
-              {documento &&
-                !uploadingDoc &&
-                (documento.endsWith(".pdf") ? (
-                  <div
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      overflow: "hidden",
-                      borderRadius: "6px",
-                      border: "1px solid #2a2a2a",
-                      background: "#0f0f0f",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <iframe
-                      src={`${API_URL}/uploads/${documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-                      width="100"
-                      height="100"
-                      style={{
-                        border: "none",
-                      }}
-                      title="Preview documento"
-                    />
-                  </div>
-                ) : (
-                  <img
-                    src={`${API_URL}/uploads/${documento}`}
-                    alt="Preview documento"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "cover",
-                      borderRadius: "6px",
-                      border: "1px solid #2a2a2a",
-                      marginBottom: "8px",
-                    }}
-                  />
-                ))}
-              <input
-                key={`doc-${fileInputKey}`}
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    handleFileUpload(file, setDocumento, setUploadingDoc);
-                  }
-                }}
-                disabled={uploadingDoc}
-              />
-              {uploadingDoc && (
-                <span style={{ color: "#C8A870", fontSize: "11px" }}>
-                  A carregar...
-                </span>
-              )}
-            </div>
           </div>
 
           <div className="input-group">
@@ -313,7 +257,7 @@ function RegisterPage() {
             <button
               type="submit"
               className="login-btn"
-              disabled={isAuthenticating || uploadingFoto || uploadingDoc}
+              disabled={isAuthenticating || uploadingFoto}
             >
               {isAuthenticating ? (
                 <Loader className="spinner" size={20} />

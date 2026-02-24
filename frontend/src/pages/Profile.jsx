@@ -1,6 +1,6 @@
 import { AuthContext } from "../contexts/authContext.jsx";
 import { useContext, useState, useEffect, useCallback } from "react";
-import { API_URL } from "../config";
+import { API_URL, getFileUrl } from "../config";
 import { useSearchParams } from "react-router";
 import Navbar from "../components/Navbar.jsx";
 import "../styles.css";
@@ -16,7 +16,6 @@ function Profile() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
-  const [docFile, setDocFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
 
   const [successMsg, setSuccessMsg] = useState("");
@@ -98,7 +97,6 @@ function Profile() {
     setMorada(authUser.morada || "");
     setPassword("");
     setPhotoFile(null);
-    setDocFile(null);
     setPhotoPreview(null);
     setSuccessMsg("");
     setErrorMsg("");
@@ -131,7 +129,7 @@ function Profile() {
     if (!response.ok) throw new Error("Erro ao enviar ficheiro");
 
     const data = await response.json();
-    return data.filename;
+    return data.url;
   }
 
   async function handleSubmit(e) {
@@ -142,13 +140,9 @@ function Profile() {
 
     try {
       let newPhoto = null;
-      let newDoc = null;
 
       if (photoFile) {
         newPhoto = await uploadFile(photoFile);
-      }
-      if (docFile) {
-        newDoc = await uploadFile(docFile);
       }
 
       const body = {};
@@ -156,7 +150,6 @@ function Profile() {
       if (morada && morada !== authUser.morada) body.newMorada = morada;
       if (password) body.newPassword = password;
       if (newPhoto) body.newPhoto = newPhoto;
-      if (newDoc) body.newDoc = newDoc;
 
       if (Object.keys(body).length === 0) {
         setErrorMsg("Nenhuma alteração detetada.");
@@ -186,7 +179,6 @@ function Profile() {
         telefone: body.newTelefone || prev.telefone,
         morada: body.newMorada || prev.morada,
         fotografia: newPhoto || prev.fotografia,
-        documento: newDoc || prev.documento,
       }));
 
       setSuccessMsg("Perfil atualizado com sucesso!");
@@ -208,7 +200,7 @@ function Profile() {
             <img
               src={
                 photoPreview ||
-                `${API_URL}/uploads/${authUser.fotografia}`
+                getFileUrl(authUser.fotografia)
               }
               alt="Foto de perfil"
               className="profile-photo"
@@ -343,42 +335,6 @@ function Profile() {
                         )}
                       </button>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="document-preview">
-                <h4>Documento de Identificação</h4>
-                {authUser.documento?.endsWith(".pdf") ? (
-                  <embed
-                    src={`${API_URL}/uploads/${authUser.documento}`}
-                    type="application/pdf"
-                    className="document-embed"
-                  />
-                ) : (
-                  <img
-                    src={`${API_URL}/uploads/${authUser.documento}`}
-                    alt="Documento de identificação"
-                    className="document-image"
-                  />
-                )}
-                <a
-                  href={`${API_URL}/uploads/${authUser.documento}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="document-link"
-                >
-                  Abrir em Nova Aba
-                </a>
-
-                {updatingUser && (
-                  <div className="profile-file-group">
-                    <label>Alterar Documento</label>
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => setDocFile(e.target.files[0])}
-                    />
                   </div>
                 )}
               </div>

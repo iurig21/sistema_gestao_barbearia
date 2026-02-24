@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
-import { API_URL } from "../config";
+import { API_URL, getFileUrl } from "../config";
 import { useContext } from "react";
 import { Loader } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
@@ -58,9 +58,13 @@ function Services() {
               <div key={service.id} className="service-card">
                 <div className="service-image-container">
                   <img
-                    src={`${API_URL}/uploads/${service.imagem}`}
+                    src={getFileUrl(service.imagem)}
                     alt={service.nome}
                     className="service-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'%3E%3Crect fill='%232a2a2a' width='200' height='150'/%3E%3Ctext fill='%23888' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='14'%3EImagem indisponível%3C/text%3E%3C/svg%3E";
+                    }}
                   />
                 </div>
                 <div className="service-content">

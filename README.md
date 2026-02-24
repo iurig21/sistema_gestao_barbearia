@@ -17,7 +17,7 @@ Sistema completo de gestão para barbearias com agendamento de serviços, contro
 - Gestão de serviços (registo, edição, exclusão e listagem)
 - Sistema de agendamentos com validação de disponibilidade
 - Gestão de barbeiros e usuários
-- Upload de arquivos (imagens e documentos PDF)
+- Upload de arquivos (imagens)
 - Validação de horários
 
 ## Documentação dos Endpoints

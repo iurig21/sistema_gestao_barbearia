@@ -38,10 +38,10 @@ const userController = {
 
   updateUser: async (req, res) => {
     try {
-      const { newPassword, newTelefone, newMorada, newPhoto, newDoc } = req.body;
+      const { newPassword, newTelefone, newMorada, newPhoto } = req.body;
       const { id: userId } = req.params;
 
-      if (!newPassword && !newTelefone && !newMorada && !newPhoto && !newDoc) {
+      if (!newPassword && !newTelefone && !newMorada && !newPhoto) {
         return res.status(400).json({ message: "No new info provided" });
       }
 
@@ -55,7 +55,6 @@ const userController = {
         newTelefone,
         newMorada,
         newPhoto,
-        newDoc,
       });
 
       if (!userInfoUpdated) {

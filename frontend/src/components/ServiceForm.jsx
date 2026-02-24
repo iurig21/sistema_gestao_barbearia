@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader, X } from "lucide-react";
-import { API_URL } from "../config";
+import { API_URL, getFileUrl } from "../config";
 
 function ServiceForm({ isOpen, onClose, onSuccess, token }) {
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -30,7 +30,7 @@ function ServiceForm({ isOpen, onClose, onSuccess, token }) {
       }
 
       const data = await response.json();
-      setAddForm({ ...addForm, imagem: data.filename });
+      setAddForm({ ...addForm, imagem: data.url });
     } catch (err) {
       setError(err.message);
       console.error("Upload error:", err);

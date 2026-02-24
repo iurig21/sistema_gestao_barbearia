@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
-import { API_URL } from "../config";
+import { API_URL, getFileUrl } from "../config";
 import { Trash2, User } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 
@@ -80,7 +80,6 @@ function AdminUtilizadores() {
                 <th>Data Nascimento</th>
                 <th>Género</th>
                 <th>Fotografia</th>
-                <th>Documento ID</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -99,7 +98,7 @@ function AdminUtilizadores() {
                   <td className="image-cell">
                     {user.fotografia ? (
                       <img
-                        src={`${API_URL}/uploads/${user.fotografia}`}
+                        src={getFileUrl(user.fotografia)}
                         alt={user.nome}
                         width="60"
                         height="60"
@@ -112,68 +111,12 @@ function AdminUtilizadores() {
                           margin: "0 auto",
                         }}
                         onClick={() =>
-                          window.open(`${API_URL}/uploads/${user.fotografia}`, "_blank")
+                          window.open(getFileUrl(user.fotografia), "_blank")
                         }
                         title="Clique para ver em tamanho completo"
                       />
                     ) : (
                       <span style={{ color: "#888", fontSize: "12px" }}>Sem foto</span>
-                    )}
-                  </td>
-                  <td className="image-cell">
-                    {user.documento ? (
-                      user.documento.endsWith(".pdf") ? (
-                        <div
-                          style={{
-                            width: "60px",
-                            height: "60px",
-                            cursor: "pointer",
-                            position: "relative",
-                            margin: "0 auto",
-                            overflow: "hidden",
-                            borderRadius: "6px",
-                            border: "1px solid #2a2a2a",
-                            background: "#0f0f0f",
-                          }}
-                          onClick={() =>
-                            window.open(`${API_URL}/uploads/${user.documento}`, "_blank")
-                          }
-                          title="Clique para ver o documento PDF completo"
-                        >
-                          <iframe
-                            src={`${API_URL}/uploads/${user.documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-                            width="60"
-                            height="60"
-                            style={{
-                              border: "none",
-                              pointerEvents: "none",
-                              transform: "scale(1)",
-                              transformOrigin: "0 0",
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <img
-                          src={`${API_URL}/uploads/${user.documento}`}
-                          alt="Documento"
-                          width="60"
-                          height="60"
-                          style={{
-                            cursor: "pointer",
-                            objectFit: "cover",
-                            borderRadius: "6px",
-                            border: "1px solid #2a2a2a",
-                            display: "block",
-                            margin: "0 auto",
-                          }}
-                          onClick={() =>
-                            window.open(`${API_URL}/uploads/${user.documento}`, "_blank")
-                          }
-                          title="Clique para ver em tamanho completo"
-                        />
-                      )
-                    ) : (
-                      <span style={{ color: "#888", fontSize: "12px" }}>Sem documento</span>
                     )}
                   </td>
                   <td>

@@ -4,7 +4,7 @@ import "../styles.css";
 
 function ConfirmarRegisto() {
   const location = useLocation();
-  const userId = location.state?.userId;
+  const userId = location.state?.userId ?? sessionStorage.getItem("pendingVerifyUserId");
 
   return (
     <div className="login-container">
@@ -36,6 +36,7 @@ function ConfirmarRegisto() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
           {userId && (
             <Link
+              onClick={() => sessionStorage.removeItem("pendingVerifyUserId")}
               to={`/verificar-telefone?userId=${userId}`}
               className="login-btn"
               style={{ textDecoration: "none", padding: "10px 28px", display: "inline-block" }}

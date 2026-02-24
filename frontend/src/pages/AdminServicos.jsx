@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
-import { API_URL } from "../config";
+import { API_URL, getFileUrl } from "../config";
 import { Trash2, Edit, Scissors, Plus } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 import ServiceForm from "../components/ServiceForm.jsx";
@@ -87,7 +87,7 @@ function AdminServicos() {
       if (!response.ok) throw new Error("Erro ao fazer upload da imagem");
 
       const data = await response.json();
-      setEditForm({ ...editForm, imagem: data.filename });
+      setEditForm({ ...editForm, imagem: data.url });
     } catch (err) {
       setError(err.message);
       console.error(err);
@@ -195,7 +195,7 @@ function AdminServicos() {
                         <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center" }}>
                           {editForm.imagem && !uploadingEditImage && (
                             <img
-                              src={`${API_URL}/uploads/${editForm.imagem}`}
+                              src={getFileUrl(editForm.imagem)}
                               alt="Preview"
                               style={{
                                 width: "60px",
@@ -203,6 +203,10 @@ function AdminServicos() {
                                 objectFit: "cover",
                                 borderRadius: "6px",
                                 border: "1px solid #2a2a2a",
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect fill='%232a2a2a' width='60' height='60'/%3E%3Ctext fill='%23888' x='30' y='32' dominant-baseline='middle' text-anchor='middle' font-size='8'%3EN/A%3C/text%3E%3C/svg%3E";
                               }}
                             />
                           )}
@@ -243,9 +247,13 @@ function AdminServicos() {
                       <td className="price-cell">{service.preco}€</td>
                       <td className="image-cell">
                         <img
-                          src={`${API_URL}/uploads/${service.imagem}`}
+                          src={getFileUrl(service.imagem)}
                           alt={service.nome}
                           className="service-thumbnail"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect fill='%232a2a2a' width='60' height='60'/%3E%3Ctext fill='%23888' x='30' y='32' dominant-baseline='middle' text-anchor='middle' font-size='8'%3EN/A%3C/text%3E%3C/svg%3E";
+                          }}
                         />
                       </td>
                       <td>

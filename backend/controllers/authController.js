@@ -48,7 +48,6 @@ const authController = {
       telefone,
       genero,
       fotografia,
-      documento,
       password,
     } = req.body;
 
@@ -61,7 +60,6 @@ const authController = {
         !telefone.trim() ||
         !genero.trim() ||
         !fotografia.trim() ||
-        !documento.trim() ||
         !password.trim()
       ) {
         return res
@@ -101,7 +99,6 @@ const authController = {
         telefone,
         genero,
         fotografia,
-        documento,
         password: hashedPassword,
       });
 
@@ -119,9 +116,9 @@ const authController = {
       const phoneCode = Math.floor(100000 + Math.random() * 900000).toString();
       await UserService.setPhoneCode(newUser.id, phoneCode);
 
-      MessageService.sendWhatsAppCode(telefone, phoneCode).catch((err) =>
-        console.error("Erro ao enviar código WhatsApp:", err)
-      );
+      MessageService.sendWhatsAppCode(telefone, phoneCode).catch((err) => {
+        console.error("Erro ao enviar código WhatsApp:", err);
+      });
 
       res
         .status(201)
@@ -204,7 +201,12 @@ const authController = {
       res.status(200).json({ message: "Código reenviado com sucesso" });
     } catch (err) {
       console.error("Erro ao reenviar código:", err);
-      res.status(500).json({ message: "Internal server error" });
+      const isTwilioError = err?.code === 21608 || err?.message?.includes("Twilio");
+      res.status(500).json({
+        message: isTwilioError
+          ? "Não foi possível enviar o código. Confirme que adicionou o número do Twilio sandbox no WhatsApp."
+          : "Erro ao reenviar código",
+      });
     }
   },
 

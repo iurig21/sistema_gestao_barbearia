@@ -24,7 +24,7 @@ const UserService = {
   getUsers: async () => {
     try {
       const { recordset: users } =
-        await sql.query`SELECT id, nome, email, telefone, datanascimento, genero, role, fotografia, documento FROM utilizadores ORDER BY nome ASC`;
+        await sql.query`SELECT id, nome, email, telefone, datanascimento, genero, role, fotografia FROM utilizadores ORDER BY nome ASC`;
 
       return users ?? null;
     } catch (err) {
@@ -40,14 +40,13 @@ const UserService = {
     telefone,
     genero,
     fotografia,
-    documento,
     password,
   }) => {
     try {
       const result = await sql.query`
-        INSERT INTO utilizadores(nome, datanascimento, morada, email, telefone, genero, fotografia, documento, password)
+        INSERT INTO utilizadores(nome, datanascimento, morada, email, telefone, genero, fotografia, password)
         OUTPUT INSERTED.id
-        VALUES (${nome}, ${datanascimento}, ${morada}, ${email}, ${telefone}, ${genero}, ${fotografia}, ${documento}, ${password})`;
+        VALUES (${nome}, ${datanascimento}, ${morada}, ${email}, ${telefone}, ${genero}, ${fotografia}, ${password})`;
 
       return result.recordset[0] ?? null;
     } catch (err) {
@@ -117,7 +116,7 @@ const UserService = {
     }
   },
 
-  updateUser: async ({ userId, newPassword, newTelefone, newMorada, newPhoto, newDoc }) => {
+  updateUser: async ({ userId, newPassword, newTelefone, newMorada, newPhoto }) => {
     try {
       const setClauses = [];
       const request = new sql.Request();
@@ -137,10 +136,6 @@ const UserService = {
       if (newPhoto) {
         setClauses.push("fotografia = @newPhoto");
         request.input("newPhoto", sql.NVarChar, newPhoto);
-      }
-      if (newDoc) {
-        setClauses.push("documento = @newDoc");
-        request.input("newDoc", sql.NVarChar, newDoc);
       }
 
       if (setClauses.length === 0) return false;
