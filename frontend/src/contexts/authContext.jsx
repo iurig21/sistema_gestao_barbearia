@@ -1,5 +1,6 @@
 import { useState, createContext, useEffect } from "react";
 import { Loader } from "lucide-react";
+import { API_URL } from "../config";
 
 const AuthContext = createContext();
 export { AuthContext };
@@ -18,7 +19,7 @@ function AuthProvider({ children }) {
       const storedToken = localStorage.getItem("token");
       if (storedToken) {
         try {
-          const userResponse = await fetch("http://localhost:3000/check-auth", {
+          const userResponse = await fetch(`${API_URL}/check-auth`, {
             method: "POST",
             headers: { Authorization: `Bearer ${storedToken}` },
           });
@@ -50,7 +51,7 @@ function AuthProvider({ children }) {
     try {
       setIsAuthenticating(true);
 
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -66,7 +67,7 @@ function AuthProvider({ children }) {
       setToken(token);
       setIsAuthenticated(true);
 
-      const userResponse = await fetch("http://localhost:3000/check-auth", {
+      const userResponse = await fetch(`${API_URL}/check-auth`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -89,7 +90,7 @@ function AuthProvider({ children }) {
     try {
       setIsAuthenticating(true);
 
-      const response = await fetch("http://localhost:3000/register", {
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),

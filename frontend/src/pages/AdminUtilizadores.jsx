@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { API_URL } from "../config";
 import { Trash2, User } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 
@@ -14,7 +15,7 @@ function AdminUtilizadores() {
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("http://localhost:3000/users", {
+        const response = await fetch(`${API_URL}/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -36,7 +37,7 @@ function AdminUtilizadores() {
     if (!confirm("Deseja excluir este utilizador?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/users/${id}`, {
+      const response = await fetch(`${API_URL}/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -98,7 +99,7 @@ function AdminUtilizadores() {
                   <td className="image-cell">
                     {user.fotografia ? (
                       <img
-                        src={`http://localhost:3000/uploads/${user.fotografia}`}
+                        src={`${API_URL}/uploads/${user.fotografia}`}
                         alt={user.nome}
                         width="60"
                         height="60"
@@ -111,7 +112,7 @@ function AdminUtilizadores() {
                           margin: "0 auto",
                         }}
                         onClick={() =>
-                          window.open(`http://localhost:3000/uploads/${user.fotografia}`, "_blank")
+                          window.open(`${API_URL}/uploads/${user.fotografia}`, "_blank")
                         }
                         title="Clique para ver em tamanho completo"
                       />
@@ -135,12 +136,12 @@ function AdminUtilizadores() {
                             background: "#0f0f0f",
                           }}
                           onClick={() =>
-                            window.open(`http://localhost:3000/uploads/${user.documento}`, "_blank")
+                            window.open(`${API_URL}/uploads/${user.documento}`, "_blank")
                           }
                           title="Clique para ver o documento PDF completo"
                         >
                           <iframe
-                            src={`http://localhost:3000/uploads/${user.documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                            src={`${API_URL}/uploads/${user.documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                             width="60"
                             height="60"
                             style={{
@@ -153,7 +154,7 @@ function AdminUtilizadores() {
                         </div>
                       ) : (
                         <img
-                          src={`http://localhost:3000/uploads/${user.documento}`}
+                          src={`${API_URL}/uploads/${user.documento}`}
                           alt="Documento"
                           width="60"
                           height="60"
@@ -166,7 +167,7 @@ function AdminUtilizadores() {
                             margin: "0 auto",
                           }}
                           onClick={() =>
-                            window.open(`http://localhost:3000/uploads/${user.documento}`, "_blank")
+                            window.open(`${API_URL}/uploads/${user.documento}`, "_blank")
                           }
                           title="Clique para ver em tamanho completo"
                         />

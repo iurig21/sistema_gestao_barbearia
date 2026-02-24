@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router";
+import { API_URL } from "../config";
 import { Loader, CheckCircle, XCircle } from "lucide-react";
 import "../styles.css";
 
@@ -18,7 +19,7 @@ function VerificarEmail() {
       return;
     }
 
-    fetch(`http://localhost:3000/verify-email?token=${token}`)
+    fetch(`${API_URL}/verify-email?token=${token}`)
       .then((res) => {
         if (res.ok) setStatus("success");
         else setStatus("error");

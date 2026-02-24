@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles.css";
+import { API_URL } from "../config";
 import { Link } from "react-router";
 import { Loader } from "lucide-react";
 import { AuthContext } from "../contexts/authContext.jsx";
@@ -35,7 +36,7 @@ function RegisterPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -199,7 +200,7 @@ function RegisterPage() {
               <label>Fotografia {fotografia && "✓"}</label>
               {fotografia && !uploadingFoto && (
                 <img
-                  src={`http://localhost:3000/uploads/${fotografia}`}
+                  src={`${API_URL}/uploads/${fotografia}`}
                   alt="Preview fotografia"
                   style={{
                     width: "100px",
@@ -247,7 +248,7 @@ function RegisterPage() {
                     }}
                   >
                     <iframe
-                      src={`http://localhost:3000/uploads/${documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                      src={`${API_URL}/uploads/${documento}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                       width="100"
                       height="100"
                       style={{
@@ -258,7 +259,7 @@ function RegisterPage() {
                   </div>
                 ) : (
                   <img
-                    src={`http://localhost:3000/uploads/${documento}`}
+                    src={`${API_URL}/uploads/${documento}`}
                     alt="Preview documento"
                     style={{
                       width: "100px",

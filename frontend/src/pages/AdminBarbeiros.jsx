@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { API_URL } from "../config";
 import { Trash2, User, Plus } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 import BarbeirosForm from "../components/BarbeirosForm.jsx";
@@ -16,7 +17,7 @@ function AdminBarbeiros() {
     const fetchBarbeiros = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("http://localhost:3000/barbeiros", {
+        const response = await fetch(`${API_URL}/barbeiros`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -38,7 +39,7 @@ function AdminBarbeiros() {
     if (!confirm("Tem certeza que deseja excluir este barbeiro?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/barbeiro/${id}`, {
+      const response = await fetch(`${API_URL}/barbeiro/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -53,7 +54,7 @@ function AdminBarbeiros() {
   };
 
   const handleBarbeiroAdded = () => {
-    fetch("http://localhost:3000/barbeiros", {
+    fetch(`${API_URL}/barbeiros`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

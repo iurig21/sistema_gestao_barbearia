@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { API_URL } from "../config";
 import { Trash2, Calendar, Clock, User } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 
@@ -22,10 +23,10 @@ function AdminMarcacoes() {
         setError(null);
 
         const [marcacoesRes, barbeirosRes] = await Promise.all([
-          fetch("http://localhost:3000/appointments/all", {
+          fetch(`${API_URL}/appointments/all`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:3000/barbeiros", {
+          fetch(`${API_URL}/barbeiros`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -52,7 +53,7 @@ function AdminMarcacoes() {
     if (!confirm("Tem certeza que deseja cancelar esta marcação?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/appointments/${id}`, {
+      const response = await fetch(`${API_URL}/appointments/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

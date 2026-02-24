@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { API_URL } from "../config";
 import { useContext } from "react";
 import { Loader } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
@@ -16,7 +17,7 @@ function Services() {
     const fetchServices = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("http://localhost:3000/services", {
+        const response = await fetch(`${API_URL}/services`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,7 +58,7 @@ function Services() {
               <div key={service.id} className="service-card">
                 <div className="service-image-container">
                   <img
-                    src={`http://localhost:3000/uploads/${service.imagem}`}
+                    src={`${API_URL}/uploads/${service.imagem}`}
                     alt={service.nome}
                     className="service-image"
                   />

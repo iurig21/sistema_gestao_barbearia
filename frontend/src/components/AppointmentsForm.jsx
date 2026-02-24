@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { X, Calendar, Clock, Scissors, User } from "lucide-react";
 import { AuthContext } from "../contexts/authContext";
+import { API_URL } from "../config";
 
 function AppointmentsForm({ isOpen, onClose, onSuccess }) {
   const [services, setServices] = useState([]);
@@ -32,7 +33,7 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
 
   const fetchServices = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:3000/services", {
+      const response = await fetch(`${API_URL}/services`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -53,7 +54,7 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
 
   const fetchBarbeiros = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:3000/barbeiros", {
+      const response = await fetch(`${API_URL}/barbeiros`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -75,8 +76,8 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
   const fetchBookedSlots = async (date, barbeiroID) => {
     try {
       const url = barbeiroID
-        ? `http://localhost:3000/appointments/booked/${date}?barbeiroId=${barbeiroID}`
-        : `http://localhost:3000/appointments/booked/${date}`;
+        ? `${API_URL}/appointments/booked/${date}?barbeiroId=${barbeiroID}`
+        : `${API_URL}/appointments/booked/${date}`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -110,7 +111,7 @@ function AppointmentsForm({ isOpen, onClose, onSuccess }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/appointments", {
+      const response = await fetch(`${API_URL}/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

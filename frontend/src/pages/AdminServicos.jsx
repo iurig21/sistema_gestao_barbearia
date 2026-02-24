@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { API_URL } from "../config";
 import { Trash2, Edit, Scissors, Plus } from "lucide-react";
 import Loading from "../components/Loading.jsx";
 import ServiceForm from "../components/ServiceForm.jsx";
@@ -24,7 +25,7 @@ function AdminServicos() {
     const fetchServices = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("http://localhost:3000/services", {
+        const response = await fetch(`${API_URL}/services`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -46,7 +47,7 @@ function AdminServicos() {
     if (!confirm("Tem certeza que deseja excluir este serviço?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/services/${id}`, {
+      const response = await fetch(`${API_URL}/services/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -78,7 +79,7 @@ function AdminServicos() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -97,7 +98,7 @@ function AdminServicos() {
 
   const handleUpdateService = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/services/${id}`, {
+      const response = await fetch(`${API_URL}/services/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -194,7 +195,7 @@ function AdminServicos() {
                         <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center" }}>
                           {editForm.imagem && !uploadingEditImage && (
                             <img
-                              src={`http://localhost:3000/uploads/${editForm.imagem}`}
+                              src={`${API_URL}/uploads/${editForm.imagem}`}
                               alt="Preview"
                               style={{
                                 width: "60px",
@@ -242,7 +243,7 @@ function AdminServicos() {
                       <td className="price-cell">{service.preco}€</td>
                       <td className="image-cell">
                         <img
-                          src={`http://localhost:3000/uploads/${service.imagem}`}
+                          src={`${API_URL}/uploads/${service.imagem}`}
                           alt={service.nome}
                           className="service-thumbnail"
                         />

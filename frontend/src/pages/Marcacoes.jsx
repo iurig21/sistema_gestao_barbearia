@@ -4,6 +4,7 @@ import AppointmentsForm from "../components/AppointmentsForm.jsx";
 import Appointments from "../components/Appointments.jsx";
 import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../contexts/authContext.jsx";
+import { API_URL } from "../config";
 import { Link } from "react-router";
 
 function Marcacoes() {
@@ -19,7 +20,7 @@ function Marcacoes() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch("http://localhost:3000/appointments", {
+      const response = await fetch(`${API_URL}/appointments`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,7 +50,7 @@ function Marcacoes() {
     if (!confirm("Tem certeza que deseja cancelar esta marcação?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/appointments/${id}`, {
+      const response = await fetch(`${API_URL}/appointments/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

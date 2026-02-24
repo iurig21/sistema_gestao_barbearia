@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { X, User } from "lucide-react";
 import { AuthContext } from "../contexts/authContext";
+import { API_URL } from "../config";
 
 function BarbeirosForm({ isOpen, onClose, onSuccess }) {
   const [nome, setNome] = useState("");
@@ -15,7 +16,7 @@ function BarbeirosForm({ isOpen, onClose, onSuccess }) {
     setNome("")
 
     try {
-      const response = await fetch("http://localhost:3000/barbeiro", {
+      const response = await fetch(`${API_URL}/barbeiro`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

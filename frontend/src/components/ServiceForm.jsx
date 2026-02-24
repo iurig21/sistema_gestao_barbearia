@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Loader, X } from "lucide-react";
+import { API_URL } from "../config";
 
 function ServiceForm({ isOpen, onClose, onSuccess, token }) {
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -19,7 +20,7 @@ function ServiceForm({ isOpen, onClose, onSuccess, token }) {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -52,7 +53,7 @@ function ServiceForm({ isOpen, onClose, onSuccess, token }) {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/services", {
+      const response = await fetch(`${API_URL}/services`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

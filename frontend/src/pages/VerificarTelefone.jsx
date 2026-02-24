@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router";
+import { API_URL } from "../config";
 import { Loader, CheckCircle, XCircle, Smartphone } from "lucide-react";
 import "../styles.css";
 
@@ -55,7 +56,7 @@ function VerificarTelefone() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/verify-phone", {
+      const response = await fetch(`${API_URL}/verify-phone`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId), code: fullCode }),
@@ -78,7 +79,7 @@ function VerificarTelefone() {
     setResending(true);
     setError("");
     try {
-      const response = await fetch("http://localhost:3000/resend-phone-code", {
+      const response = await fetch(`${API_URL}/resend-phone-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: Number(userId) }),

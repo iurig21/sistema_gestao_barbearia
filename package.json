@@ -1,5 +1,6 @@
 {
-  "dependencies": {
-    "twilio": "^5.12.2"
+  "scripts": {
+    "postinstall": "cd backend && npm install --omit=dev",
+    "start": "cd backend && node server.js"
   }
 }

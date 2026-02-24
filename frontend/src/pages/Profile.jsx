@@ -1,5 +1,6 @@
 import { AuthContext } from "../contexts/authContext.jsx";
 import { useContext, useState, useEffect, useCallback } from "react";
+import { API_URL } from "../config";
 import { useSearchParams } from "react-router";
 import Navbar from "../components/Navbar.jsx";
 import "../styles.css";
@@ -27,7 +28,7 @@ function Profile() {
 
   const checkGoogleStatus = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:3000/google/status", {
+      const response = await fetch(`${API_URL}/google/status`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -60,7 +61,7 @@ function Profile() {
   async function connectGoogle() {
     setGoogleLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/google/auth-url", {
+      const response = await fetch(`${API_URL}/google/auth-url`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -78,7 +79,7 @@ function Profile() {
   async function disconnectGoogle() {
     if (!confirm("Deseja desconectar o Google Calendar?")) return;
     try {
-      const response = await fetch("http://localhost:3000/google/disconnect", {
+      const response = await fetch(`${API_URL}/google/disconnect`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -122,7 +123,7 @@ function Profile() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch("http://localhost:3000/upload", {
+    const response = await fetch(`${API_URL}/upload`, {
       method: "POST",
       body: formData,
     });
@@ -164,7 +165,7 @@ function Profile() {
       }
 
       const response = await fetch(
-        `http://localhost:3000/users/${authUser.id}`,
+        `${API_URL}/users/${authUser.id}`,
         {
           method: "PUT",
           headers: {
@@ -207,7 +208,7 @@ function Profile() {
             <img
               src={
                 photoPreview ||
-                `http://localhost:3000/uploads/${authUser.fotografia}`
+                `${API_URL}/uploads/${authUser.fotografia}`
               }
               alt="Foto de perfil"
               className="profile-photo"
@@ -350,19 +351,19 @@ function Profile() {
                 <h4>Documento de Identificação</h4>
                 {authUser.documento?.endsWith(".pdf") ? (
                   <embed
-                    src={`http://localhost:3000/uploads/${authUser.documento}`}
+                    src={`${API_URL}/uploads/${authUser.documento}`}
                     type="application/pdf"
                     className="document-embed"
                   />
                 ) : (
                   <img
-                    src={`http://localhost:3000/uploads/${authUser.documento}`}
+                    src={`${API_URL}/uploads/${authUser.documento}`}
                     alt="Documento de identificação"
                     className="document-image"
                   />
                 )}
                 <a
-                  href={`http://localhost:3000/uploads/${authUser.documento}`}
+                  href={`${API_URL}/uploads/${authUser.documento}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="document-link"
