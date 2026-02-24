@@ -1,6 +1,6 @@
 import "./styles.css";
 import LoginPage from "./pages/LoginPage.jsx";
-import RegisterPage from "./pages/registerPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
 import Services from "./pages/Services.jsx";
 import AdminLayout from "./pages/AdminLayout.jsx";
 import AdminMarcacoes from "./pages/AdminMarcacoes.jsx";
