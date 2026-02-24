@@ -13,11 +13,8 @@ const googleController = {
   },
 
   handleCallback: async (req, res) => {
+    const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
     try {
-
-      const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
-      
-
       const { code, state: userId } = req.query;
 
 

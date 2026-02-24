@@ -1,19 +1,16 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const fromEmail =
+  process.env.EMAIL_FROM || "Barbearia <onboarding@resend.dev>";
 
 const EmailService = {
   sendVerificationEmail: async (toEmail, token) => {
     const verificationUrl = `${process.env.FRONTEND_URL}/verificar-email?token=${token}`;
 
-    const mailOptions = {
-      from: `"Barbearia" <${process.env.EMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: fromEmail,
       to: toEmail,
       subject: "Verifique o seu email",
       html: `
@@ -30,9 +27,9 @@ const EmailService = {
           <p style="color: #888; font-size: 14px;">Se não criou esta conta, ignore este email.</p>
         </div>
       `,
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (error) throw error;
   },
 };
 
